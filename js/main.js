@@ -10,7 +10,7 @@ function parseSheet(raw) {
   return json.table.rows.map(row => {
     const obj = {};
     row.c.forEach((cell, i) => {
-      obj[cols[i]] = cell ? (cell.f || cell.v) : '';
+      obj[cols[i]] = cell ? (cell.v !== null && cell.v !== undefined ? String(cell.v) : '') : '';
     });
     return obj;
   });
