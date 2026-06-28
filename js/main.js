@@ -14,13 +14,18 @@ function parseSheet(raw) {
         obj[cols[i]] = '';
         return;
       }
-      // Форматируем Date-объекты из Google Sheets
       if (typeof cell.v === 'string' && cell.v.startsWith('Date(')) {
         const parts = cell.v.slice(5, -1).split(',').map(Number);
-        const d = new Date(parts[0], parts[1], parts[2]);
-        obj[cols[i]] = d.toLocaleDateString('ru-RU', {
-          day: 'numeric', month: 'long', year: 'numeric'
-        });
+        if (parts[0] === 1899) {
+          const h = String(parts[3] ?? 0).padStart(2, '0');
+          const m = String(parts[4] ?? 0).padStart(2, '0');
+          obj[cols[i]] = `${h}:${m}`;
+        } else {
+          const d = new Date(parts[0], parts[1], parts[2]);
+          obj[cols[i]] = d.toLocaleDateString('ru-RU', {
+            day: 'numeric', month: 'long', year: 'numeric'
+          });
+        }
       } else {
         obj[cols[i]] = String(cell.v);
       }
