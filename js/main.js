@@ -10,7 +10,20 @@ function parseSheet(raw) {
   return json.table.rows.map(row => {
     const obj = {};
     row.c.forEach((cell, i) => {
-      obj[cols[i]] = cell ? (cell.v !== null && cell.v !== undefined ? String(cell.v) : '') : '';
+      if (!cell || cell.v === null || cell.v === undefined) {
+        obj[cols[i]] = '';
+        return;
+      }
+      // Форматируем Date-объекты из Google Sheets
+      if (typeof cell.v === 'string' && cell.v.startsWith('Date(')) {
+        const parts = cell.v.slice(5, -1).split(',').map(Number);
+        const d = new Date(parts[0], parts[1], parts[2]);
+        obj[cols[i]] = d.toLocaleDateString('ru-RU', {
+          day: 'numeric', month: 'long', year: 'numeric'
+        });
+      } else {
+        obj[cols[i]] = String(cell.v);
+      }
     });
     return obj;
   });
