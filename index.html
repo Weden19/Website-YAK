@@ -3,11 +3,239 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Мой сайт</title>
+  <title>Название сообщества — VRChat</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap">
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-  <h1>Привет!</h1>
+
+  <header class="site-header">
+    <div class="container">
+      <div class="logo">⬡ COMMUNITY</div>
+      <nav class="nav">
+        <a href="#about" class="nav-link">О группе</a>
+        <a href="#events" class="nav-link">Ивенты</a>
+        <a href="#team" class="nav-link">Состав</a>
+        <a href="#files" class="nav-link">Файлы</a>
+      </nav>
+      <button class="burger" aria-label="Меню" onclick="toggleMenu()">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </header>
+
+  <nav class="mobile-nav" id="mobileNav">
+    <a href="#about" onclick="closeMenu()">О группе</a>
+    <a href="#events" onclick="closeMenu()">Ивенты</a>
+    <a href="#team" onclick="closeMenu()">Состав</a>
+    <a href="#files" onclick="closeMenu()">Файлы</a>
+  </nav>
+
+  <main>
+
+    <!-- HERO -->
+    <section class="hero">
+      <div class="container">
+        <p class="hero-tag">VRChat Community</p>
+        <h1 class="hero-title">Название<br>сообщества</h1>
+        <p class="hero-desc">Краткое описание — чем занимаетесь, какой формат, кто ваши участники.</p>
+        <div class="hero-actions">
+          <a href="#about" class="btn btn-primary">Узнать больше</a>
+          <a href="#events" class="btn btn-ghost">Ближайший ивент →</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ABOUT -->
+    <section class="section" id="about">
+      <div class="container">
+        <p class="section-label">О группе</p>
+        <h2 class="section-title">Кто мы</h2>
+        <div class="about-grid">
+          <div class="about-text">
+            <p>Здесь можно рассказать историю сообщества: когда основано, чем занимаетесь в VRChat, какой формат активности.</p>
+            <p>Можно добавить второй абзац — ценности, атмосфера, что отличает вас от других групп.</p>
+          </div>
+          <div class="stats-grid">
+            <div class="stat-card">
+              <span class="stat-num">—</span>
+              <span class="stat-label">Участников</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-num">—</span>
+              <span class="stat-label">Ивентов</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-num">—</span>
+              <span class="stat-label">Миров</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-num">—</span>
+              <span class="stat-label">С года</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- EVENTS -->
+    <section class="section section-alt" id="events">
+      <div class="container">
+        <p class="section-label">Ивенты</p>
+        <h2 class="section-title">Расписание</h2>
+        <div class="events-list">
+
+          <div class="event-card event-upcoming">
+            <div class="event-badge">Скоро</div>
+            <div class="event-body">
+              <p class="event-date">ДД.ММ.ГГГГ · 20:00 МСК</p>
+              <h3 class="event-name">Название ивента</h3>
+              <p class="event-desc">Краткое описание что будет происходить, где, какой формат.</p>
+            </div>
+            <div class="event-world">Мир: <span>Название мира</span></div>
+          </div>
+
+          <div class="event-card">
+            <div class="event-badge event-badge-past">Прошёл</div>
+            <div class="event-body">
+              <p class="event-date">ДД.ММ.ГГГГ · 20:00 МСК</p>
+              <h3 class="event-name">Название ивента</h3>
+              <p class="event-desc">Краткое описание что было.</p>
+            </div>
+            <div class="event-world">Мир: <span>Название мира</span></div>
+          </div>
+
+          <div class="event-card">
+            <div class="event-badge event-badge-past">Прошёл</div>
+            <div class="event-body">
+              <p class="event-date">ДД.ММ.ГГГГ · 20:00 МСК</p>
+              <h3 class="event-name">Название ивента</h3>
+              <p class="event-desc">Краткое описание что было.</p>
+            </div>
+            <div class="event-world">Мир: <span>Название мира</span></div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- TEAM -->
+    <section class="section" id="team">
+      <div class="container">
+        <p class="section-label">Состав</p>
+        <h2 class="section-title">Организаторы</h2>
+        <div class="team-grid">
+
+          <div class="team-card">
+            <div class="team-avatar">АА</div>
+            <div class="team-info">
+              <p class="team-name">Имя участника</p>
+              <p class="team-role">Основатель</p>
+            </div>
+          </div>
+
+          <div class="team-card">
+            <div class="team-avatar">ББ</div>
+            <div class="team-info">
+              <p class="team-name">Имя участника</p>
+              <p class="team-role">Модератор</p>
+            </div>
+          </div>
+
+          <div class="team-card">
+            <div class="team-avatar">ВВ</div>
+            <div class="team-info">
+              <p class="team-name">Имя участника</p>
+              <p class="team-role">Организатор ивентов</p>
+            </div>
+          </div>
+
+          <div class="team-card">
+            <div class="team-avatar">ГГ</div>
+            <div class="team-info">
+              <p class="team-name">Имя участника</p>
+              <p class="team-role">Разработчик миров</p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- FILES -->
+    <section class="section section-alt" id="files">
+      <div class="container">
+        <p class="section-label">Файлы</p>
+        <h2 class="section-title">Для участников</h2>
+        <div class="files-grid">
+
+          <div class="file-category">
+            <p class="file-cat-label">Аватарки</p>
+            <div class="file-list">
+              <a href="#" class="file-item">
+                <span class="file-icon">↓</span>
+                <div class="file-meta">
+                  <span class="file-name">Название аватара</span>
+                  <span class="file-info">Unity package · 12 MB</span>
+                </div>
+              </a>
+              <a href="#" class="file-item">
+                <span class="file-icon">↓</span>
+                <div class="file-meta">
+                  <span class="file-name">Название аватара</span>
+                  <span class="file-info">Unity package · 8 MB</span>
+                </div>
+              </a>
+            </div>
+          </div>
+
+          <div class="file-category">
+            <p class="file-cat-label">Миры</p>
+            <div class="file-list">
+              <a href="#" class="file-item">
+                <span class="file-icon">↓</span>
+                <div class="file-meta">
+                  <span class="file-name">Название мира</span>
+                  <span class="file-info">Unity package · 45 MB</span>
+                </div>
+              </a>
+            </div>
+          </div>
+
+          <div class="file-category">
+            <p class="file-cat-label">Документы</p>
+            <div class="file-list">
+              <a href="#" class="file-item">
+                <span class="file-icon">↓</span>
+                <div class="file-meta">
+                  <span class="file-name">Правила сообщества</span>
+                  <span class="file-info">PDF · 0.2 MB</span>
+                </div>
+              </a>
+              <a href="#" class="file-item">
+                <span class="file-icon">↓</span>
+                <div class="file-meta">
+                  <span class="file-name">Инструкция по установке</span>
+                  <span class="file-info">PDF · 1.1 MB</span>
+                </div>
+              </a>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p class="footer-name">⬡ COMMUNITY</p>
+      <p class="footer-copy">VRChat · © 2025</p>
+    </div>
+  </footer>
+
   <script src="js/main.js"></script>
 </body>
 </html>
