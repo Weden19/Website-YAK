@@ -12,7 +12,10 @@
 
   <header class="site-header">
     <div class="container">
-      <div class="logo">⬡ COMMUNITY</div>
+      <div class="logo">
+        <img src="assets/logo.png" alt="Логотип" class="logo-img">
+        <span class="logo-text">COMMUNITY</span>
+      </div>
       <nav class="nav">
         <a href="#about" class="nav-link">О группе</a>
         <a href="#events" class="nav-link">Ивенты</a>
@@ -57,21 +60,21 @@
             <p>Здесь можно рассказать историю сообщества: когда основано, чем занимаетесь в VRChat, какой формат активности.</p>
             <p>Можно добавить второй абзац — ценности, атмосфера, что отличает вас от других групп.</p>
           </div>
-          <div class="stats-grid">
+          <div class="stats-grid" id="statsGrid">
             <div class="stat-card">
-              <span class="stat-num">—</span>
+              <span class="stat-num" id="stat-members">—</span>
               <span class="stat-label">Участников</span>
             </div>
             <div class="stat-card">
-              <span class="stat-num">—</span>
+              <span class="stat-num" id="stat-events">—</span>
               <span class="stat-label">Ивентов</span>
             </div>
             <div class="stat-card">
-              <span class="stat-num">—</span>
+              <span class="stat-num" id="stat-worlds">—</span>
               <span class="stat-label">Миров</span>
             </div>
             <div class="stat-card">
-              <span class="stat-num">—</span>
+              <span class="stat-num" id="stat-since">—</span>
               <span class="stat-label">С года</span>
             </div>
           </div>
@@ -84,39 +87,23 @@
       <div class="container">
         <p class="section-label">Ивенты</p>
         <h2 class="section-title">Расписание</h2>
-        <div class="events-list">
 
-          <div class="event-card event-upcoming">
-            <div class="event-badge">Скоро</div>
-            <div class="event-body">
-              <p class="event-date">ДД.ММ.ГГГГ · 20:00 МСК</p>
-              <h3 class="event-name">Название ивента</h3>
-              <p class="event-desc">Краткое описание что будет происходить, где, какой формат.</p>
-            </div>
-            <div class="event-world">Мир: <span>Название мира</span></div>
+        <!-- Регулярные -->
+        <div class="events-block">
+          <p class="events-block-label">Регулярные</p>
+          <div id="regularEvents" class="events-list">
+            <div class="event-skeleton"></div>
           </div>
-
-          <div class="event-card">
-            <div class="event-badge event-badge-past">Прошёл</div>
-            <div class="event-body">
-              <p class="event-date">ДД.ММ.ГГГГ · 20:00 МСК</p>
-              <h3 class="event-name">Название ивента</h3>
-              <p class="event-desc">Краткое описание что было.</p>
-            </div>
-            <div class="event-world">Мир: <span>Название мира</span></div>
-          </div>
-
-          <div class="event-card">
-            <div class="event-badge event-badge-past">Прошёл</div>
-            <div class="event-body">
-              <p class="event-date">ДД.ММ.ГГГГ · 20:00 МСК</p>
-              <h3 class="event-name">Название ивента</h3>
-              <p class="event-desc">Краткое описание что было.</p>
-            </div>
-            <div class="event-world">Мир: <span>Название мира</span></div>
-          </div>
-
         </div>
+
+        <!-- Специальные -->
+        <div class="events-block">
+          <p class="events-block-label">Специальные</p>
+          <div id="specialEvents" class="events-list">
+            <div class="event-skeleton"></div>
+          </div>
+        </div>
+
       </div>
     </section>
 
@@ -128,34 +115,58 @@
         <div class="team-grid">
 
           <div class="team-card">
-            <div class="team-avatar">АА</div>
+            <img src="assets/team/tabelnik.png" alt="Табельник" class="team-avatar-img" onerror="avatarFallback(this)">
             <div class="team-info">
-              <p class="team-name">Имя участника</p>
-              <p class="team-role">Основатель</p>
+              <p class="team-name">Табельник</p>
+              <p class="team-role">Организатор</p>
             </div>
           </div>
 
           <div class="team-card">
-            <div class="team-avatar">ББ</div>
+            <img src="assets/team/waltergray.png" alt="Walter Gray" class="team-avatar-img" onerror="avatarFallback(this)">
             <div class="team-info">
-              <p class="team-name">Имя участника</p>
-              <p class="team-role">Модератор</p>
+              <p class="team-name">Walter Gray</p>
+              <p class="team-role">Организатор</p>
             </div>
           </div>
 
           <div class="team-card">
-            <div class="team-avatar">ВВ</div>
+            <img src="assets/team/weden19.png" alt="Weden19" class="team-avatar-img" onerror="avatarFallback(this)">
             <div class="team-info">
-              <p class="team-name">Имя участника</p>
-              <p class="team-role">Организатор ивентов</p>
+              <p class="team-name">Weden19</p>
+              <p class="team-role">Организатор</p>
             </div>
           </div>
 
           <div class="team-card">
-            <div class="team-avatar">ГГ</div>
+            <img src="assets/team/yarik.png" alt="Ярик ПолуКринж" class="team-avatar-img" onerror="avatarFallback(this)">
             <div class="team-info">
-              <p class="team-name">Имя участника</p>
-              <p class="team-role">Разработчик миров</p>
+              <p class="team-name">Ярик ПолуКринж</p>
+              <p class="team-role">Организатор</p>
+            </div>
+          </div>
+
+          <div class="team-card">
+            <img src="assets/team/rudt.png" alt="Rudt" class="team-avatar-img" onerror="avatarFallback(this)">
+            <div class="team-info">
+              <p class="team-name">Rudt</p>
+              <p class="team-role">Организатор</p>
+            </div>
+          </div>
+
+          <div class="team-card">
+            <img src="assets/team/thehumancanon.png" alt="TheHumanCanon" class="team-avatar-img" onerror="avatarFallback(this)">
+            <div class="team-info">
+              <p class="team-name">TheHumanCanon</p>
+              <p class="team-role">Организатор</p>
+            </div>
+          </div>
+
+          <div class="team-card">
+            <img src="assets/team/tektinok.png" alt="Tektinok" class="team-avatar-img" onerror="avatarFallback(this)">
+            <div class="team-info">
+              <p class="team-name">Tektinok</p>
+              <p class="team-role">Организатор</p>
             </div>
           </div>
 
@@ -178,13 +189,6 @@
                 <div class="file-meta">
                   <span class="file-name">Название аватара</span>
                   <span class="file-info">Unity package · 12 MB</span>
-                </div>
-              </a>
-              <a href="#" class="file-item">
-                <span class="file-icon">↓</span>
-                <div class="file-meta">
-                  <span class="file-name">Название аватара</span>
-                  <span class="file-info">Unity package · 8 MB</span>
                 </div>
               </a>
             </div>
@@ -213,13 +217,6 @@
                   <span class="file-info">PDF · 0.2 MB</span>
                 </div>
               </a>
-              <a href="#" class="file-item">
-                <span class="file-icon">↓</span>
-                <div class="file-meta">
-                  <span class="file-name">Инструкция по установке</span>
-                  <span class="file-info">PDF · 1.1 MB</span>
-                </div>
-              </a>
             </div>
           </div>
 
@@ -231,7 +228,10 @@
 
   <footer class="site-footer">
     <div class="container">
-      <p class="footer-name">⬡ COMMUNITY</p>
+      <div class="footer-logo">
+        <img src="assets/logo.png" alt="Логотип" class="logo-img">
+        <span class="logo-text">COMMUNITY</span>
+      </div>
       <p class="footer-copy">VRChat · © 2025</p>
     </div>
   </footer>
