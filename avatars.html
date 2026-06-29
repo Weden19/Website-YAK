@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Аватары — Академия Яковлева</title>
+  <link rel="icon" type="image/png" href="assets/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <header class="site-header">
+    <div class="container">
+      <a href="index.html" class="logo">
+        <img src="assets/logo.png" alt="Логотип" class="logo-img">
+        <span class="logo-text">АКАДЕМИЯ ЯКОВЛЕВА</span>
+      </a>
+      <nav class="nav">
+        <a href="index.html" class="nav-link">← Главная</a>
+        <a href="rules.html" class="nav-link">Правила</a>
+        <a href="avatars.html" class="nav-link" style="color:var(--text-primary)">Аватары</a>
+      </nav>
+      <button class="burger" aria-label="Меню" onclick="toggleMenu()">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </header>
+
+  <nav class="mobile-nav" id="mobileNav">
+    <a href="index.html" onclick="closeMenu()">← Главная</a>
+    <a href="rules.html" onclick="closeMenu()">Правила</a>
+    <a href="avatars.html" onclick="closeMenu()">Аватары</a>
+  </nav>
+
+  <main>
+    <section class="hero" style="padding: 60px 0 48px;">
+      <div class="container">
+        <p class="hero-tag">Для участников</p>
+        <h1 class="hero-title" style="font-size: clamp(32px,5vw,52px)">Аватары и ассеты</h1>
+        <p class="hero-desc">Правила для собственных аватаров, префабы и материалы для участников группы.</p>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <p class="section-label">Правила аватаров</p>
+        <h2 class="section-title">Требования</h2>
+        <p class="avatars-intro">Раздел в разработке. Здесь появятся требования к аватарам участников группы.</p>
+        <span class="coming-soon">⏳ Скоро</span>
+      </div>
+    </section>
+
+    <section class="section section-alt">
+      <div class="container">
+        <p class="section-label">Файлы</p>
+        <h2 class="section-title">Префабы и ассеты</h2>
+        <p class="avatars-intro">Здесь будут ссылки на префабы, текстуры и другие ассеты для аватаров участников.</p>
+        <div class="files-grid">
+          <div class="file-category">
+            <p class="file-cat-label">Префабы для аватаров</p>
+            <div class="file-list">
+              <a href="ССЫЛКА_СЮДА" target="_blank" class="file-item">
+                <span class="file-icon">↗</span>
+                <div class="file-meta">
+                  <span class="file-name">Название префаба</span>
+                </div>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-logo">
+        <img src="assets/logo.png" alt="Логотип" class="logo-img">
+        <span class="logo-text">АКАДЕМИЯ ЯКОВЛЕВА</span>
+      </div>
+      <p class="footer-copy">VRChat · © 2025</p>
+    </div>
+  </footer>
+
+  <script>
+    function toggleMenu() { document.getElementById('mobileNav').classList.toggle('open'); }
+    function closeMenu() { document.getElementById('mobileNav').classList.remove('open'); }
+  </script>
+</body>
+</html>

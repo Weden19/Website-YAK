@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Правила — Академия Яковлева</title>
+  <link rel="icon" type="image/png" href="assets/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <header class="site-header">
+    <div class="container">
+      <a href="index.html" class="logo">
+        <img src="assets/logo.png" alt="Логотип" class="logo-img">
+        <span class="logo-text">АКАДЕМИЯ ЯКОВЛЕВА</span>
+      </a>
+      <nav class="nav">
+        <a href="index.html" class="nav-link">← Главная</a>
+        <a href="rules.html" class="nav-link" style="color:var(--text-primary)">Правила</a>
+        <a href="avatars.html" class="nav-link">Аватары</a>
+      </nav>
+      <button class="burger" aria-label="Меню" onclick="toggleMenu()">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </header>
+
+  <nav class="mobile-nav" id="mobileNav">
+    <a href="index.html" onclick="closeMenu()">← Главная</a>
+    <a href="rules.html" onclick="closeMenu()">Правила</a>
+    <a href="avatars.html" onclick="closeMenu()">Аватары</a>
+  </nav>
+
+  <main>
+    <section class="hero" style="padding: 60px 0 48px;">
+      <div class="container">
+        <p class="hero-tag">Документы</p>
+        <h1 class="hero-title" style="font-size: clamp(32px,5vw,52px)">Правила группы</h1>
+        <p class="hero-desc">Незнание правил не освобождает от ответственности. Пожалуйста, ознакомьтесь перед вступлением.</p>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <div class="rules-content">
+
+          <div class="rules-chapter">
+            <h2 class="rules-chapter-title">1. Общие положения</h2>
+            <ul class="rules-list">
+              <li><span class="rule-num">1.1</span> Незнание правил не освобождает от ответственности.</li>
+              <li><span class="rule-num">1.2</span> Участие на сервере означает согласие с настоящими правилами.</li>
+              <li><span class="rule-num">1.3</span> Запрещена реклама сторонних проектов, серверов, сайтов и ресурсов без разрешения Администрации.</li>
+              <li><span class="rule-num">1.4</span> Административный Аппарат представлен людьми с ролью «Организационный состав».</li>
+              <li><span class="rule-num">1.5</span> Администрация вправе изменять правила в любое время без предварительного уведомления.</li>
+              <li><span class="rule-num">1.6</span> Администрация может применять к нарушителям наказания по своему усмотрению.</li>
+              <li><span class="rule-num">1.7</span> Администрация вправе наказывать группы (компании) за действия отдельных участников этих групп в целях предотвращения систематических нарушений.</li>
+              <li><span class="rule-num">1.8</span> Все решения Администрации конечны и подлежат рассмотрению только в крайних случаях.</li>
+            </ul>
+          </div>
+
+          <div class="rules-chapter">
+            <h2 class="rules-chapter-title">2. Правила общения</h2>
+            <ul class="rules-list">
+              <li><span class="rule-num">2.1</span> Языками общения устанавливаются русский и английский языки.</li>
+              <li><span class="rule-num">2.2</span> Спам (множественное повторение одинаковых по смыслу / бессмысленных сообщений) запрещён.</li>
+              <li><span class="rule-num">2.3</span> Запрещается публиковать эротические, порнографические, излишне жестокие материалы.</li>
+              <li><span class="rule-num">2.4</span> Запрещаются бессмысленные упоминания (@ник) без причины.</li>
+              <li><span class="rule-num">2.5</span> Запрещено введение в заблуждение с негативным умыслом.</li>
+              <li><span class="rule-num">2.6</span> Запрещена публикация / рассылка материалов с вредоносным ПО, если его существование было известно заранее.</li>
+              <li><span class="rule-num">2.7</span> Запрещено разглашение личной информации человека без его согласия.</li>
+              <li><span class="rule-num">2.8</span> Запрещена пропаганда экстремизма и публикация экстремистских материалов.</li>
+              <li><span class="rule-num">2.9</span> Запрещена пропаганда и демонстрация нацистской (фашистской) символики, в том числе полка «Азов», «Кракен», 3-й ОШБ, РДК, «Полка Кастуся Калиновского», ЛСР и подобных.</li>
+            </ul>
+          </div>
+
+          <div class="rules-chapter">
+            <h2 class="rules-chapter-title">3. Иерархия</h2>
+            <ul class="rules-list">
+              <li><span class="rule-num">3.1</span> Прислушивайтесь к мнению вышестоящих по должности / званию людей.</li>
+              <li><span class="rule-num">3.2</span> Выполняйте указания инструкторского состава.</li>
+            </ul>
+          </div>
+
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-logo">
+        <img src="assets/logo.png" alt="Логотип" class="logo-img">
+        <span class="logo-text">АКАДЕМИЯ ЯКОВЛЕВА</span>
+      </div>
+      <p class="footer-copy">VRChat · © 2025</p>
+    </div>
+  </footer>
+
+  <script>
+    function toggleMenu() { document.getElementById('mobileNav').classList.toggle('open'); }
+    function closeMenu() { document.getElementById('mobileNav').classList.remove('open'); }
+  </script>
+</body>
+</html>
