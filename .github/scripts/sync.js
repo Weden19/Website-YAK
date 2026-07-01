@@ -56,7 +56,7 @@ async function main() {
           {
             headers: {
               'Cookie': jar.toString(),
-              'User-Agent': UA,,
+              'User-Agent': UA,
               'Content-Type': 'application/json',
             },
           }
@@ -70,7 +70,7 @@ async function main() {
 
     const headers = {
       'Cookie': jar.toString(),
-      'User-Agent': UA,,
+      'User-Agent': UA,
     };
 
     // Данные группы
