@@ -37,7 +37,7 @@ async function main() {
     const authRes = await axios.get(`${BASE_URL}/auth/user`, {
       headers: {
         'Authorization': `Basic ${credentials}`,
-        'User-Agent': 'YakovlevAcademy/1.0 (github-actions; contact: discord.gg/yakovlev-academy)',
+        'User-Agent': 'YakovlevAcademySiteSync/1.0.0 YakovlevAcademy/1.0.0 (discord.gg/yakovlev-academy)',
       },
     });
     jar.add(authRes.headers['set-cookie']);
@@ -54,7 +54,7 @@ async function main() {
           {
             headers: {
               'Cookie': jar.toString(),
-              'User-Agent': 'YakovlevAcademy/1.0 (github-actions; contact: discord.gg/yakovlev-academy)',
+              'User-Agent': 'YakovlevAcademySiteSync/1.0.0 YakovlevAcademy/1.0.0 (discord.gg/yakovlev-academy)',
               'Content-Type': 'application/json',
             },
           }
@@ -68,7 +68,7 @@ async function main() {
 
     const headers = {
       'Cookie': jar.toString(),
-      'User-Agent': 'YakovlevAcademy/1.0 (github-actions; contact: discord.gg/yakovlev-academy)',
+      'User-Agent': 'YakovlevAcademySiteSync/1.0.0 YakovlevAcademy/1.0.0 (discord.gg/yakovlev-academy)',
     };
 
     // Данные группы
