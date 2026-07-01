@@ -1,3 +1,6 @@
+// ===== КОНФИГ =====
+const SHEETS_CSV_URL = 'https://docs.google.com/spreadsheets/d/1x6L5vMbK3nu68oUATruuKS3aPyBobaneE8m9p6r4vvE/export?format=csv&gid=0';
+
 // ===== ЗАГРУЗКА ДАННЫХ САЙТА =====
 async function loadSiteData() {
   try {
@@ -11,21 +14,6 @@ async function loadSiteData() {
       membersEl.textContent = data.members;
     }
 
-    // Ближайший ивент
-    if (data.nextEvent) {
-      const container = document.getElementById('regularEvents');
-      if (container) {
-        container.innerHTML = `
-          <div class="event-card">
-            <h3 class="event-title">${data.nextEvent.name}</h3>
-            <p class="event-date">${data.nextEvent.date} в ${data.nextEvent.time}</p>
-            <p class="event-world">${data.nextEvent.world}</p>
-            ${data.nextEvent.description ? `<p class="event-desc">${data.nextEvent.description}</p>` : ''}
-          </div>
-        `;
-      }
-    }
-
     // Галерея
     if (data.gallery && data.gallery.length > 0) {
       initSlider(data.gallery);
@@ -35,9 +23,147 @@ async function loadSiteData() {
         viewport.innerHTML = '<div class="slider-placeholder">Фото появятся после первого ивента</div>';
       }
     }
+
+    // Ивенты из Google Sheets
+    await loadEventsFromSheets();
+
   } catch (err) {
     console.error('Failed to load site data:', err);
   }
+}
+
+// ===== ФЕТЧ ИВЕНТОВ ИЗ GOOGLE SHEETS =====
+async function loadEventsFromSheets() {
+  if (!SHEETS_CSV_URL) {
+    console.warn('Google Sheets URL не настроен');
+    return;
+  }
+
+  try {
+    const response = await fetch(SHEETS_CSV_URL);
+    if (!response.ok) throw new Error('Sheets fetch failed');
+    
+    const csvText = await response.text();
+    const events = parseCSV(csvText);
+    
+    if (events.length === 0) {
+      console.log('No events in Google Sheets');
+      showEmptyEvents();
+      return;
+    }
+
+    const now = new Date();
+    const upcoming = events
+      .filter(e => new Date(e.date) > now)
+      .sort((a, b) => new Date(a.date) - new Date(b.date));
+
+    // Ближайший ивент
+    const regularContainer = document.getElementById('regularEvents');
+    if (regularContainer) {
+      if (upcoming.length > 0) {
+        const next = upcoming[0];
+        const d = new Date(next.date);
+        regularContainer.innerHTML = `
+          <div class="event-card">
+            <h3 class="event-name">${escapeHtml(next.title)}</h3>
+            <p class="event-date">${d.toLocaleDateString('ru-RU')} в ${d.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}</p>
+            <p class="event-world">${escapeHtml(next.world || '–')}</p>
+            ${next.description ? `<p class="event-desc">${escapeHtml(next.description)}</p>` : ''}
+          </div>
+        `;
+      } else {
+        regularContainer.innerHTML = '<p class="events-empty">Пока нет запланированных ивентов</p>';
+      }
+    }
+
+    // Специальные ивенты
+    const special = upcoming.filter(e => e.type === 'special');
+    const specialContainer = document.getElementById('specialEvents');
+    if (specialContainer) {
+      if (special.length > 0) {
+        specialContainer.innerHTML = special.map(e => {
+          const d = new Date(e.date);
+          return `
+            <div class="event-card">
+              <h3 class="event-name">${escapeHtml(e.title)}</h3>
+              <p class="event-date">${d.toLocaleDateString('ru-RU')} в ${d.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}</p>
+              <p class="event-world">${escapeHtml(e.world || '–')}</p>
+              ${e.description ? `<p class="event-desc">${escapeHtml(e.description)}</p>` : ''}
+            </div>
+          `;
+        }).join('');
+      } else {
+        specialContainer.innerHTML = '<p class="events-empty">Пока нет специальных ивентов</p>';
+      }
+    }
+
+    console.log(`Loaded ${upcoming.length} upcoming events from Sheets`);
+
+  } catch (err) {
+    console.error('Failed to load events from Sheets:', err);
+    showEmptyEvents();
+  }
+}
+
+function showEmptyEvents() {
+  const regularContainer = document.getElementById('regularEvents');
+  const specialContainer = document.getElementById('specialEvents');
+  if (regularContainer) regularContainer.innerHTML = '<p class="events-empty">Расписание временно недоступно</p>';
+  if (specialContainer) specialContainer.innerHTML = '<p class="events-empty">Расписание временно недоступно</p>';
+}
+
+// ===== ПАРСЕР CSV =====
+function parseCSV(text) {
+  const lines = text.trim().split(/\r?\n/);
+  if (lines.length < 2) return [];
+  
+  const headers = parseCSVLine(lines[0]).map(h => h.trim().toLowerCase());
+  const events = [];
+  
+  for (let i = 1; i < lines.length; i++) {
+    const values = parseCSVLine(lines[i]);
+    const obj = {};
+    headers.forEach((h, idx) => {
+      obj[h] = (values[idx] || '').trim();
+    });
+    if (obj.title) events.push(obj);
+  }
+  
+  return events;
+}
+
+// Корректный парсер строки CSV (учитывает кавычки и запятые внутри них)
+function parseCSVLine(line) {
+  const result = [];
+  let current = '';
+  let inQuotes = false;
+  
+  for (let i = 0; i < line.length; i++) {
+    const char = line[i];
+    
+    if (char === '"') {
+      if (inQuotes && line[i + 1] === '"') {
+        current += '"';
+        i++;
+      } else {
+        inQuotes = !inQuotes;
+      }
+    } else if (char === ',' && !inQuotes) {
+      result.push(current);
+      current = '';
+    } else {
+      current += char;
+    }
+  }
+  result.push(current);
+  return result;
+}
+
+// Экранирование HTML
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
 }
 
 // ===== СЛАЙДЕР =====
@@ -138,6 +264,26 @@ function sliderPrev() {
 window.sliderNext = sliderNext;
 window.sliderPrev = sliderPrev;
 
+// ===== АВАТАРКИ-ЗАГЛУШКИ =====
+function initAvatars() {
+  const avatars = document.querySelectorAll('.team-avatar[data-name]');
+  avatars.forEach(el => {
+    const name = el.getAttribute('data-name');
+    if (!name) return;
+    
+    const initials = name
+      .split(' ')
+      .map(word => word[0])
+      .filter(Boolean)
+      .slice(0, 2)
+      .join('')
+      .toUpperCase();
+    
+    el.textContent = initials;
+  });
+}
+
+// ===== МОБИЛЬНОЕ МЕНЮ =====
 window.toggleMenu = function() {
   const nav = document.getElementById('mobileNav');
   if (nav) nav.classList.toggle('open');
@@ -148,7 +294,9 @@ window.closeMenu = function() {
   if (nav) nav.classList.remove('open');
 };
 
+// ===== ИНИЦИАЛИЗАЦИЯ =====
 document.addEventListener('DOMContentLoaded', () => {
+  initAvatars();
   loadSiteData();
 
   const slider = document.querySelector('.slider');
