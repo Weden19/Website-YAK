@@ -1,6 +1,14 @@
 {
   "members": 195,
-  "nextEvent": null,
-  "gallery": [],
-  "updated": "2026-07-01T21:03:29.129Z"
+  "nextEvent": {
+    "name": "Лётная среда‚ мои чувакиǃ",
+    "description": "Летаем сами и учим другихǃ\nС нас авиация и обучение - с вас соблюдение правил․\nАвиация это просто - приходите и убедитесь самиǃ",
+    "date": "08.07.2026",
+    "time": "18:00"
+  },
+  "gallery": [
+    "https://api.vrchat.cloud/api/1/file/file_83741558-26cf-47a0-b1d3-6e0c32e77273/1/file",
+    "https://api.vrchat.cloud/api/1/file/file_687984ec-2852-4696-9caf-8d940b599bcf/1/file"
+  ],
+  "updated": "2026-07-01T21:18:52.489Z"
 }
