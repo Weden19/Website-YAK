@@ -3,6 +3,7 @@ const fs = require('fs');
 const path = require('path');
 
 const GROUP_ID = 'grp_629eb128-47c7-40c5-848b-c0b8cb8e8a7a';
+const GALLERY_NAME = 'Фотографии группы';
 const BASE_URL = 'https://api.vrchat.cloud/api/1';
 const DATA_FILE = path.join(__dirname, '../../data/vrchat.json');
 const UA = 'YakovlevAcademy/1.0.0 (bot; +discord.gg/yakovlev-academy)';
@@ -116,8 +117,9 @@ async function main() {
     try {
       const galleries = group.galleries || [];
       if (galleries.length > 0) {
-        const galleryId = galleries[0].id;
-        console.log(`Using gallery "${galleries[0].name}" (${galleryId})`);
+        const target = galleries.find(g => g.name === GALLERY_NAME) || galleries[0];
+        const galleryId = target.id;
+        console.log(`Using gallery "${target.name}" (${galleryId})`);
         const galleryRes = await axios.get(
           `${BASE_URL}/groups/${GROUP_ID}/galleries/${galleryId}`,
           { headers, params: { n: 20, approved: true } }
