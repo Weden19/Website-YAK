@@ -116,8 +116,8 @@ async function loadVRChatData() {
     if (data.gallery && data.gallery.length > 0) {
       initSlider(data.gallery);
     } else {
-      const viewport = document.querySelector('.slider-viewport');
-      if (viewport) viewport.innerHTML = '<div class="slider-placeholder">Фото появятся после первого ивента</div>';
+      const track = document.getElementById('sliderTrack');
+      if (track) track.innerHTML = '<div class="slider-placeholder">Фото появятся после первого ивента</div>';
     }
 
   } catch (err) {
@@ -136,41 +136,36 @@ const sliderState = {
 };
 
 function initSlider(images) {
-  const viewport = document.querySelector('.slider-viewport');
+  const track = document.getElementById('sliderTrack');
   const dotsContainer = document.getElementById('sliderDots');
-  const totalEl = document.getElementById('sliderTotal');
-  const currentEl = document.getElementById('sliderCurrent');
 
-  if (!viewport || !images || images.length === 0) return;
+  if (!track || !images || images.length === 0) return;
 
   sliderState.images = images;
   sliderState.current = 0;
 
-  viewport.innerHTML = '';
+  track.innerHTML = '';
   if (dotsContainer) dotsContainer.innerHTML = '';
 
   images.forEach((url, i) => {
     const slide = document.createElement('div');
-    slide.className = 'slider-slide' + (i === 0 ? ' is-active' : '');
+    slide.className = 'slider-slide' + (i === 0 ? ' active' : '');
     slide.dataset.index = i;
     const img = document.createElement('img');
     img.src = url;
     img.alt = `Фото ${i + 1}`;
     img.loading = i < 2 ? 'eager' : 'lazy';
     slide.appendChild(img);
-    viewport.appendChild(slide);
+    track.appendChild(slide);
 
     if (dotsContainer) {
       const dot = document.createElement('button');
-      dot.className = 'slider-dot' + (i === 0 ? ' is-active' : '');
+      dot.className = 'slider-dot' + (i === 0 ? ' active' : '');
       dot.setAttribute('aria-label', `Слайд ${i + 1}`);
       dot.onclick = () => goToSlide(i);
       dotsContainer.appendChild(dot);
     }
   });
-
-  if (totalEl) totalEl.textContent = images.length;
-  if (currentEl) currentEl.textContent = 1;
 
   startAutoPlay();
 }
@@ -178,17 +173,15 @@ function initSlider(images) {
 function goToSlide(index) {
   const slides = document.querySelectorAll('.slider-slide');
   const dots = document.querySelectorAll('.slider-dot');
-  const currentEl = document.getElementById('sliderCurrent');
   const total = sliderState.images.length;
   if (total === 0) return;
 
   const next = ((index % total) + total) % total;
-  slides[sliderState.current]?.classList.remove('is-active');
-  dots[sliderState.current]?.classList.remove('is-active');
+  slides[sliderState.current]?.classList.remove('active');
+  dots[sliderState.current]?.classList.remove('active');
   sliderState.current = next;
-  slides[next]?.classList.add('is-active');
-  dots[next]?.classList.add('is-active');
-  if (currentEl) currentEl.textContent = next + 1;
+  slides[next]?.classList.add('active');
+  dots[next]?.classList.add('active');
 }
 
 function startAutoPlay() {
