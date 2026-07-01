@@ -12,9 +12,6 @@ const USERNAME = process.env.VRCHAT_USERNAME;
 const PASSWORD = process.env.VRCHAT_PASSWORD;
 const TOTP_SECRET = process.env.VRCHAT_TOTP_SECRET;
 
-// Копилка кук: собираем всё, что прилетает через Set-Cookie, в один Cookie-заголовок.
-// VRChat отдаёт auth-куку на первом шаге и отдельную twoFactorAuth-куку после verify —
-// обе нужны одновременно для последующих запросов.
 class CookieJar {
   constructor() {
     this.jar = new Map();
@@ -70,7 +67,6 @@ async function login() {
         throw new Error(`Verify 2FA (totp) failed: ${verifyRes.status} ${JSON.stringify(verifyRes.data)}`);
       }
     } else if (requiresTwoFactorAuth.includes('emailOtp')) {
-      // Код приходит на почту разово, автоматизировать без доступа к ящику нельзя.
       throw new Error('Аккаунт требует emailOtp 2FA — это нельзя пройти автоматически. Переключи 2FA на TOTP (Authenticator app).');
     } else {
       throw new Error(`Неизвестный тип 2FA: ${requiresTwoFactorAuth.join(', ')}`);
@@ -98,50 +94,69 @@ async function main() {
     const members = group.memberCount || 0;
     console.log(`Members: ${members}`);
 
-    // Ближайший ивент
+    // Ближайший ивент - используем правильный эндпоинт для событий группы
     let nextEvent = null;
     try {
-      const eventsRes = await axios.get(`${BASE_URL}/groups/${GROUP_ID}/instances`, { headers });
-      const instances = eventsRes.data || [];
-      if (instances.length > 0) {
-        const e = instances[0];
+      // Получаем события группы через events эндпоинт
+      const eventsRes = await axios.get(`${BASE_URL}/groups/${GROUP_ID}/events`, { 
+        headers,
+        params: {
+          n: 5,
+          order: 'ascending',
+          after: new Date().toISOString()
+        }
+      });
+      const events = eventsRes.data || [];
+      
+      if (events.length > 0) {
+        const e = events[0];
+        const eventDate = new Date(e.startTime || e.date);
         nextEvent = {
           name: e.name || 'Ивент',
           description: e.description || '',
-          date: e.queueEnabled ? new Date(e.queueEnabled).toLocaleDateString('ru-RU') : '',
-          time: e.queueEnabled ? new Date(e.queueEnabled).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }) : '',
-          world: e.world?.name || '–',
+          date: eventDate.toLocaleDateString('ru-RU'),
+          time: eventDate.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }),
+          world: e.location?.split('~')[0] || '–',
         };
       }
+      console.log(`Events found: ${events.length}`);
     } catch (e) {
-      console.warn('Could not fetch events:', e.message);
+      console.warn('Could not fetch events:', e.response?.status, e.response?.data || e.message);
     }
 
     // Галерея группы
-    // У группы может быть несколько именованных галерей (galleries[]),
-    // каждая со своим galleryId — картинки лежат по /groups/{id}/galleries/{galleryId}/images
     let gallery = [];
     try {
+      // Проверяем структуру group.galleries
       const galleries = group.galleries || [];
-      if (galleries.length === 0) {
-        console.warn('У группы нет ни одной галереи (group.galleries пуст)');
+      console.log(`Galleries structure:`, JSON.stringify(galleries.slice(0, 2)));
+      
+      if (galleries.length > 0) {
+        const galleryId = galleries[0].id || galleries[0].galleryId;
+        console.log(`Using gallery ID: ${galleryId}`);
+        
+        if (galleryId) {
+          const imagesRes = await axios.get(
+            `${BASE_URL}/groups/${GROUP_ID}/galleries/${galleryId}/images`,
+            { 
+              headers, 
+              params: { n: 20 }
+            }
+          );
+          const items = imagesRes.data || [];
+          console.log(`Gallery images response:`, items.length, 'items');
+          
+          gallery = items
+            .filter(i => i.imageUrl)
+            .slice(0, 20)
+            .map(i => i.imageUrl);
+        }
       } else {
-        // Берём первую галерею; если нужна конкретная — сверить id/name в логе ниже
-        const galleryId = galleries[0].id;
-        console.log(`Using gallery "${galleries[0].name}" (${galleryId})`);
-        const imagesRes = await axios.get(
-          `${BASE_URL}/groups/${GROUP_ID}/galleries/${galleryId}/images`,
-          { headers, params: { n: 20 } }
-        );
-        const items = imagesRes.data || [];
-        gallery = items
-          .filter(i => i.imageUrl)
-          .slice(0, 20)
-          .map(i => i.imageUrl);
+        console.warn('У группы нет ни одной галереи (group.galleries пуст)');
       }
       console.log(`Gallery: ${gallery.length} images`);
     } catch (e) {
-      console.warn('Could not fetch gallery:', e.response?.data || e.message);
+      console.warn('Could not fetch gallery:', e.response?.status, e.response?.data || e.message);
     }
 
     const data = { members, nextEvent, gallery, updated: new Date().toISOString() };
