@@ -31,13 +31,15 @@ async function main() {
   try {
     const jar = new CookieJar();
     const credentials = Buffer.from(`${USERNAME}:${PASSWORD}`).toString('base64');
+    const UA = 'YakovlevAcademy/1.0.0 (bot; +discord.gg/yakovlev-academy)';
+    console.log('User-Agent:', UA);
 
     // Шаг 1 — логин
     console.log('Logging in...');
     const authRes = await axios.get(`${BASE_URL}/auth/user`, {
       headers: {
         'Authorization': `Basic ${credentials}`,
-        'User-Agent': 'YakovlevAcademySiteSync/1.0.0 YakovlevAcademy/1.0.0 (discord.gg/yakovlev-academy)',
+        'User-Agent': UA,
       },
     });
     jar.add(authRes.headers['set-cookie']);
@@ -54,7 +56,7 @@ async function main() {
           {
             headers: {
               'Cookie': jar.toString(),
-              'User-Agent': 'YakovlevAcademySiteSync/1.0.0 YakovlevAcademy/1.0.0 (discord.gg/yakovlev-academy)',
+              'User-Agent': UA,,
               'Content-Type': 'application/json',
             },
           }
@@ -68,7 +70,7 @@ async function main() {
 
     const headers = {
       'Cookie': jar.toString(),
-      'User-Agent': 'YakovlevAcademySiteSync/1.0.0 YakovlevAcademy/1.0.0 (discord.gg/yakovlev-academy)',
+      'User-Agent': UA,,
     };
 
     // Данные группы
