@@ -70,7 +70,7 @@ async function loadSpecialEvents() {
             <h3 class="event-name">${r.name}</h3>
             <p class="event-desc">${r.description}</p>
           </div>
-          <div class="event-world">Мир: <span>${r.world}</span></div>
+          <div class="event-world">Мир: <span>${r.world || 'Загадка'}</span></div>
         </div>
       `;
     }).join('');
@@ -104,7 +104,7 @@ async function loadVRChatData() {
               <h3 class="event-name">${e.name}</h3>
               ${e.description ? `<p class="event-desc">${e.description}</p>` : ''}
             </div>
-            <div class="event-world">Мир: <span>${e.world}</span></div>
+            <div class="event-world">Мир: <span>${e.world || 'Загадка'}</span></div>
           </div>
         `;
       } else {
