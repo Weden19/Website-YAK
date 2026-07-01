@@ -2,12 +2,12 @@ name: VRChat Sync
 
 on:
   schedule:
-    - cron: '0 * * * *'  # каждый час
-  workflow_dispatch:       # ручной запуск
+    - cron: '0 * * * *'
+  workflow_dispatch:
 
 jobs:
   sync:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -18,12 +18,13 @@ jobs:
           node-version: '20'
 
       - name: Install dependencies
-        run: npm install vrchat axios
+        run: npm install axios otplib
 
       - name: Sync VRChat data
         env:
           VRCHAT_USERNAME: ${{ secrets.VRCHAT_USERNAME }}
           VRCHAT_PASSWORD: ${{ secrets.VRCHAT_PASSWORD }}
+          VRCHAT_TOTP_SECRET: ${{ secrets.VRCHAT_TOTP_SECRET }}
         run: node .github/scripts/sync.js
 
       - name: Commit updated data
