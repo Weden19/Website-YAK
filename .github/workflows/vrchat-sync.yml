@@ -2,12 +2,12 @@ name: VRChat Sync
 
 on:
   schedule:
-    - cron: '0 * * * *'
-  workflow_dispatch:
+    - cron: '0 * * * *'  # каждый час
+  workflow_dispatch:       # ручной запуск
 
 jobs:
   sync:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -18,7 +18,7 @@ jobs:
           node-version: '20'
 
       - name: Install dependencies
-        run: npm install axios otplib
+        run: npm install axios otplib@13.4.1
 
       - name: Sync VRChat data
         env:
