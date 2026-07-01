@@ -1,164 +1,126 @@
 const axios = require('axios');
 const fs = require('fs');
 const path = require('path');
-const { generate } = require('otplib');
-const { execSync } = require('child_process');
 
 const GROUP_ID = 'grp_629eb128-47c7-40c5-848b-c0b8cb8e8a7a';
 const BASE_URL = 'https://api.vrchat.cloud/api/1';
 const DATA_FILE = path.join(__dirname, '../../data/vrchat.json');
-const USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
+const UA = 'YakovlevAcademy/1.0.0 (bot; +discord.gg/yakovlev-academy)';
 
 const USERNAME = process.env.VRCHAT_USERNAME;
 const PASSWORD = process.env.VRCHAT_PASSWORD;
 const TOTP_SECRET = process.env.VRCHAT_TOTP_SECRET;
 
 class CookieJar {
-  constructor() { this.jar = new Map(); }
-  update(setCookieHeaders) {
+  constructor() { this.cookies = {}; }
+  add(setCookieHeaders) {
     if (!setCookieHeaders) return;
-    const headers = Array.isArray(setCookieHeaders) ? setCookieHeaders : [setCookieHeaders];
-    for (const raw of headers) {
-      const pair = raw.split(';')[0];
-      const eq = pair.indexOf('=');
-      if (eq === -1) continue;
-      this.jar.set(pair.slice(0, eq), pair.slice(eq + 1));
-    }
+    const list = Array.isArray(setCookieHeaders) ? setCookieHeaders : [setCookieHeaders];
+    list.forEach(h => {
+      const [pair] = h.split(';');
+      const [k, v] = pair.split('=');
+      if (k && v) this.cookies[k.trim()] = v.trim();
+    });
   }
-  header() {
-    return [...this.jar.entries()].map(([k, v]) => `${k}=${v}`).join('; ');
-  }
-}
-
-async function login() {
-  const jar = new CookieJar();
-  const credentials = Buffer.from(`${encodeURIComponent(USERNAME)}:${encodeURIComponent(PASSWORD)}`).toString('base64');
-
-  console.log('Logging in to VRChat...');
-  const authRes = await axios.get(`${BASE_URL}/auth/user`, {
-    headers: { 'Authorization': `Basic ${credentials}`, 'User-Agent': USER_AGENT },
-    validateStatus: () => true,
-  });
-  jar.update(authRes.headers['set-cookie']);
-
-  if (authRes.status !== 200) throw new Error(`Login failed: ${authRes.status}`);
-
-  const requiresTwoFactorAuth = authRes.data?.requiresTwoFactorAuth;
-  if (requiresTwoFactorAuth && requiresTwoFactorAuth.length > 0) {
-    if (requiresTwoFactorAuth.includes('totp')) {
-      if (!TOTP_SECRET) throw new Error('Требуется TOTP, но секрет не задан.');
-      console.log('Отправка TOTP кода...');
-      const code = await generate({ secret: TOTP_SECRET });
-      const verifyRes = await axios.post(
-        `${BASE_URL}/auth/twofactorauth/totp/verify`,
-        { code },
-        { headers: { 'Cookie': jar.header(), 'User-Agent': USER_AGENT }, validateStatus: () => true }
-      );
-      jar.update(verifyRes.headers['set-cookie']);
-      if (verifyRes.status !== 200 || verifyRes.data?.verified !== true) throw new Error('2FA Failed');
-    } else {
-      throw new Error(`Неподдерживаемый тип 2FA: ${requiresTwoFactorAuth.join(', ')}`);
-    }
-  }
-  console.log('Logged in successfully');
-  return jar.header();
-}
-
-function safeGitUpdate() {
-  try {
-    console.log('Syncing git...');
-    execSync(`git checkout origin/main -- "${DATA_FILE}"`, { stdio: 'inherit' });
-    execSync('git pull --rebase origin main', { stdio: 'inherit' });
-  } catch (err) {
-    console.error('Git sync failed, resetting...', err.message);
-    execSync('git reset --hard origin/main', { stdio: 'inherit' });
-  }
-}
-
-// Новый эндпоинт для запланированных ивентов
-async function fetchNextEvent(cookies) {
-  try {
-    console.log('Fetching next event from calendar API...');
-    const headers = { 'Cookie': cookies, 'User-Agent': USER_AGENT };
-    
-    // Используем правильный эндпоинт /calendar/{groupId}/next
-    const res = await axios.get(`${BASE_URL}/calendar/${GROUP_ID}/next`, { headers });
-    
-    const event = res.data;
-    if (!event) {
-      console.log('No upcoming events found');
-      return null;
-    }
-
-    const startDate = new Date(event.startTime || event.startDate);
-    console.log(`Next event: ${event.name} on ${startDate.toLocaleDateString('ru-RU')}`);
-
-    return {
-      name: event.name || 'Ивент',
-      description: event.description || '',
-      date: startDate.toLocaleDateString('ru-RU'),
-      time: startDate.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }),
-      world: event.world?.name || event.location || '–',
-    };
-  } catch (e) {
-    console.warn('Calendar API fetch failed:', e.response?.status, e.response?.data || e.message);
-    return null;
-  }
-}
-
-async function fetchGallery(cookies) {
-  try {
-    const headers = { 'Cookie': cookies, 'User-Agent': USER_AGENT };
-    const groupRes = await axios.get(`${BASE_URL}/groups/${GROUP_ID}`, { headers });
-    const galleries = groupRes.data.galleries || [];
-    
-    const targetGallery = galleries.find(g => g.name === 'Фотографии группы');
-    
-    if (!targetGallery) {
-      console.warn('Галерея "Фотографии группы" не найдена!');
-      return [];
-    }
-    
-    console.log(`Using gallery: ${targetGallery.name}`);
-    
-    const galleryRes = await axios.get(
-      `${BASE_URL}/groups/${GROUP_ID}/galleries/${targetGallery.id}`,
-      { headers }
-    );
-    
-    const items = galleryRes.data || [];
-    return items.filter(i => i.imageUrl).slice(0, 20).map(i => i.imageUrl);
-  } catch (e) {
-    console.warn('Gallery fetch failed:', e.message);
-    return [];
+  toString() {
+    return Object.entries(this.cookies).map(([k, v]) => `${k}=${v}`).join('; ');
   }
 }
 
 async function main() {
   try {
-    safeGitUpdate();
-    const cookies = await login();
+    const jar = new CookieJar();
+    const credentials = Buffer.from(`${USERNAME}:${PASSWORD}`).toString('base64');
 
-    // Участники
-    const groupRes = await axios.get(`${BASE_URL}/groups/${GROUP_ID}`, {
-      headers: { 'Cookie': cookies, 'User-Agent': USER_AGENT }
+    console.log('User-Agent:', UA);
+    console.log('Logging in...');
+
+    const authRes = await axios.get(`${BASE_URL}/auth/user`, {
+      headers: {
+        'Authorization': `Basic ${credentials}`,
+        'User-Agent': UA,
+      },
     });
-    const members = groupRes.data.memberCount || 0;
+    jar.add(authRes.headers['set-cookie']);
+
+    const requiresTwoFactor = authRes.data?.requiresTwoFactorAuth;
+    if (requiresTwoFactor) {
+      if (requiresTwoFactor.includes('totp')) {
+        console.log('2FA required (TOTP), verifying...');
+        const { authenticator } = require('otplib');
+        const token = authenticator.generate(TOTP_SECRET.replace(/\s/g, ''));
+        const tfaRes = await axios.post(`${BASE_URL}/auth/twofactorauth/totp/verify`,
+          { code: token },
+          {
+            headers: {
+              'Cookie': jar.toString(),
+              'User-Agent': UA,
+              'Content-Type': 'application/json',
+            },
+          }
+        );
+        jar.add(tfaRes.headers['set-cookie']);
+        console.log('2FA passed');
+      } else if (requiresTwoFactor.includes('emailOtp')) {
+        throw new Error('Email OTP не поддерживается. Переключи на TOTP.');
+      }
+    }
+
+    console.log('Logged in successfully');
+
+    const headers = {
+      'Cookie': jar.toString(),
+      'User-Agent': UA,
+    };
+
+    console.log('Fetching group data...');
+    const groupRes = await axios.get(`${BASE_URL}/groups/${GROUP_ID}`, { headers });
+    const group = groupRes.data;
+    const members = group.memberCount || 0;
     console.log(`Members: ${members}`);
 
-    // Ивенты через правильный эндпоинт calendar
-    let nextEvent = await fetchNextEvent(cookies);
-    
-    // Галерея
-    const gallery = await fetchGallery(cookies);
-    console.log(`Gallery: ${gallery.length} images`);
+    let nextEvent = null;
+    try {
+      const eventsRes = await axios.get(`${BASE_URL}/groups/${GROUP_ID}/instances`, { headers });
+      const instances = eventsRes.data || [];
+      if (instances.length > 0) {
+        const e = instances[0];
+        nextEvent = {
+          name: e.name || 'Ивент',
+          description: e.description || '',
+          date: e.queueEnabled ? new Date(e.queueEnabled).toLocaleDateString('ru-RU') : '',
+          time: e.queueEnabled ? new Date(e.queueEnabled).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }) : '',
+          world: e.world?.name || '–',
+        };
+      }
+    } catch (e) {
+      console.warn('Could not fetch events:', e.message);
+    }
+
+    let gallery = [];
+    try {
+      const galleries = group.galleries || [];
+      if (galleries.length > 0) {
+        const galleryId = galleries[0].id;
+        const galleryRes = await axios.get(
+          `${BASE_URL}/groups/${GROUP_ID}/galleries/${galleryId}/images`,
+          { headers, params: { n: 20 } }
+        );
+        gallery = (galleryRes.data || [])
+          .filter(i => i.fileUrl)
+          .map(i => i.fileUrl);
+        console.log(`Gallery: ${gallery.length} images`);
+      }
+    } catch (e) {
+      console.warn('Could not fetch gallery:', e.message);
+    }
 
     const data = { members, nextEvent, gallery, updated: new Date().toISOString() };
     fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
-    console.log('Data saved.');
+    console.log('Data saved to vrchat.json');
 
   } catch (err) {
-    console.error('Fatal Error:', err.message);
+    console.error('Error:', err.response?.data || err.message);
     process.exit(1);
   }
 }
