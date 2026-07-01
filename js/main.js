@@ -13,7 +13,20 @@ function parseSheet(raw) {
     .map(row => {
       const obj = {};
       row.c.forEach((cell, i) => {
-        obj[cols[i]] = cell ? String(cell.v !== null && cell.v !== undefined ? cell.v : '') : '';
+        if (!cell || cell.v === null || cell.v === undefined) {
+          obj[cols[i]] = '';
+          return;
+        }
+        // Форматированное значение приоритетнее
+        if (cell.f) {
+          obj[cols[i]] = cell.f;
+        } else if (typeof cell.v === 'string') {
+          obj[cols[i]] = cell.v;
+        } else if (typeof cell.v === 'number') {
+          obj[cols[i]] = String(cell.v);
+        } else {
+          obj[cols[i]] = String(cell.v);
+        }
       });
       return obj;
     });

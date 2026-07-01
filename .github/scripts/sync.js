@@ -48,7 +48,10 @@ async function main() {
       if (requiresTwoFactor.includes('totp')) {
         console.log('2FA required (TOTP), verifying...');
         const otplib = require('otplib');
-        const token = otplib.authenticator.generate(TOTP_SECRET.replace(/\s/g, ''));
+        console.log('otplib keys:', Object.keys(otplib));
+        const authenticator = otplib.authenticator || otplib.default?.authenticator || otplib.totp;
+        console.log('authenticator:', authenticator);
+        const token = authenticator.generate(TOTP_SECRET.replace(/\s/g, ''));
         const tfaRes = await axios.post(`${BASE_URL}/auth/twofactorauth/totp/verify`,
           { code: token },
           {
