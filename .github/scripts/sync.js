@@ -94,67 +94,99 @@ async function main() {
     const members = group.memberCount || 0;
     console.log(`Members: ${members}`);
 
-    // Ближайший ивент - используем правильный эндпоинт для событий группы
+    // Ближайший ивент - используем инстансы группы как замену событий
     let nextEvent = null;
     try {
-      // Получаем события группы через events эндпоинт
-      const eventsRes = await axios.get(`${BASE_URL}/groups/${GROUP_ID}/events`, { 
+      console.log('Fetching group instances...');
+      const instancesRes = await axios.get(`${BASE_URL}/groups/${GROUP_ID}/instances`, { 
         headers,
         params: {
-          n: 5,
-          order: 'ascending',
-          after: new Date().toISOString()
+          n: 10
         }
       });
-      const events = eventsRes.data || [];
+      console.log('Instances response status:', instancesRes.status);
+      console.log('Instances count:', instancesRes.data?.length || 0);
       
-      if (events.length > 0) {
-        const e = events[0];
-        const eventDate = new Date(e.startTime || e.date);
-        nextEvent = {
-          name: e.name || 'Ивент',
-          description: e.description || '',
-          date: eventDate.toLocaleDateString('ru-RU'),
-          time: eventDate.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }),
-          world: e.location?.split('~')[0] || '–',
-        };
+      const instances = instancesRes.data || [];
+      
+      if (instances.length > 0) {
+        // Фильтруем активные инстансы с датой
+        const activeInstances = instances.filter(i => i.active && i.worldId);
+        
+        if (activeInstances.length > 0) {
+          const inst = activeInstances[0];
+          const createdDate = new Date(inst.createdAt || Date.now());
+          
+          nextEvent = {
+            name: inst.name || 'Ивент',
+            description: inst.description || '',
+            date: createdDate.toLocaleDateString('ru-RU'),
+            time: createdDate.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }),
+            world: inst.world?.name || inst.worldName || '–',
+          };
+        }
       }
-      console.log(`Events found: ${events.length}`);
+      console.log(`Next event:`, nextEvent ? nextEvent.name : 'none');
     } catch (e) {
-      console.warn('Could not fetch events:', e.response?.status, e.response?.data || e.message);
+      console.warn('Could not fetch instances:', e.response?.status, e.response?.data || e.message);
     }
 
-    // Галерея группы
+    // Галерея группы - пробуем разные варианты
     let gallery = [];
     try {
-      // Проверяем структуру group.galleries
       const galleries = group.galleries || [];
-      console.log(`Galleries structure:`, JSON.stringify(galleries.slice(0, 2)));
+      console.log('Galleries from group data:', JSON.stringify(galleries, null, 2));
       
       if (galleries.length > 0) {
-        const galleryId = galleries[0].id || galleries[0].galleryId;
+        const galleryId = galleries[0].id;
         console.log(`Using gallery ID: ${galleryId}`);
         
-        if (galleryId) {
-          const imagesRes = await axios.get(
+        // Пробуем POST вместо GET
+        try {
+          console.log('Trying POST method...');
+          const imagesRes = await axios.post(
             `${BASE_URL}/groups/${GROUP_ID}/galleries/${galleryId}/images`,
+            {},
             { 
               headers, 
               params: { n: 20 }
             }
           );
           const items = imagesRes.data || [];
-          console.log(`Gallery images response:`, items.length, 'items');
-          
+          console.log('POST response:', JSON.stringify(items, null, 2));
           gallery = items
             .filter(i => i.imageUrl)
             .slice(0, 20)
             .map(i => i.imageUrl);
+          console.log(`Gallery via POST: ${gallery.length} images`);
+        } catch (postErr) {
+          console.log('POST failed:', postErr.response?.status, postErr.response?.data || postErr.message);
+          console.log('Trying alternative endpoint...');
+          
+          // Альтернативный вариант - получаем детали галереи
+          try {
+            const galleryRes = await axios.get(
+              `${BASE_URL}/groups/${GROUP_ID}/galleries/${galleryId}`,
+              { headers }
+            );
+            console.log('Gallery detail response:', JSON.stringify(galleryRes.data, null, 2));
+            
+            // Если в ответе есть images массив
+            if (galleryRes.data.images && Array.isArray(galleryRes.data.images)) {
+              gallery = galleryRes.data.images
+                .filter(i => i.imageUrl)
+                .slice(0, 20)
+                .map(i => i.imageUrl);
+              console.log(`Gallery via detail: ${gallery.length} images`);
+            }
+          } catch (detailErr) {
+            console.warn('Gallery detail also failed:', detailErr.response?.status, detailErr.response?.data || detailErr.message);
+          }
         }
       } else {
-        console.warn('У группы нет ни одной галереи (group.galleries пуст)');
+        console.warn('У группы нет ни одной галереи');
       }
-      console.log(`Gallery: ${gallery.length} images`);
+      console.log(`Final gallery: ${gallery.length} images`);
     } catch (e) {
       console.warn('Could not fetch gallery:', e.response?.status, e.response?.data || e.message);
     }
