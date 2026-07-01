@@ -110,14 +110,17 @@
         <h2 class="section-title">Галерея</h2>
       </div>
       <div class="slider">
-        <div class="slider-track" id="sliderTrack">
-          <div class="slider-slide active">
+        <div class="slider-viewport">
+          <div class="slider-slide is-active" data-index="0">
             <div class="slider-placeholder">Фото загружаются...</div>
           </div>
         </div>
-        <button class="slider-btn slider-prev" onclick="sliderPrev()">‹</button>
-        <button class="slider-btn slider-next" onclick="sliderNext()">›</button>
+        <button class="slider-btn slider-prev" aria-label="Предыдущее фото" onclick="sliderPrev()">‹</button>
+        <button class="slider-btn slider-next" aria-label="Следующее фото" onclick="sliderNext()">›</button>
         <div class="slider-dots" id="sliderDots"></div>
+        <div class="slider-counter">
+          <span id="sliderCurrent">1</span> / <span id="sliderTotal">1</span>
+        </div>
       </div>
     </section>
 

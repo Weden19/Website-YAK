@@ -7,7 +7,7 @@ const { execSync } = require('child_process');
 const GROUP_ID = 'grp_629eb128-47c7-40c5-848b-c0b8cb8e8a7a';
 const BASE_URL = 'https://api.vrchat.cloud/api/1';
 const DATA_FILE = path.join(__dirname, '../../data/vrchat.json');
-const USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'; // Более "человеческий" UA для парсинга
+const USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
 
 const USERNAME = process.env.VRCHAT_USERNAME;
 const PASSWORD = process.env.VRCHAT_PASSWORD;
@@ -75,84 +75,33 @@ function safeGitUpdate() {
   }
 }
 
-// Парсинг запланированных ивентов со страницы /events
-async function parsePlannedEvents(cookies) {
+// Новый эндпоинт для запланированных ивентов
+async function fetchNextEvent(cookies) {
   try {
-    console.log('Parsing planned events from /events page...');
-    const url = `https://vrchat.com/home/group/${GROUP_ID}/events`;
+    console.log('Fetching next event from calendar API...');
+    const headers = { 'Cookie': cookies, 'User-Agent': USER_AGENT };
     
-    // Скачиваем HTML страницы с куками авторизации
-    const res = await axios.get(url, {
-      headers: { 
-        'Cookie': cookies, 
-        'User-Agent': USER_AGENT,
-        'Accept': 'text/html,application/xhtml+xml' 
-      }
-    });
-
-    const html = res.data;
+    // Используем правильный эндпоинт /calendar/{groupId}/next
+    const res = await axios.get(`${BASE_URL}/calendar/${GROUP_ID}/next`, { headers });
     
-    // Ищем данные в скриптах. VRChat часто кладет initialState или nuxtState в JSON внутри <script>
-    // Ищем паттерн, где могут быть события
-    let nextEvent = null;
-
-    // Попытка 1: Поиск JSON внутри тегов script (самый надежный способ для SPA без браузера)
-    const scriptRegex = /<script[^>]*>([\s\S]*?)<\/script>/g;
-    let match;
-    while ((match = scriptRegex.exec(html)) !== null) {
-      const content = match[1];
-      // Ищем упоминание названия ивента или даты, чтобы не парсить весь JS
-      if (content.includes('startTime') || content.includes('name') && content.includes('description')) {
-        try {
-          // Пытаемся найти JSON объект с событиями
-          // Это эвристика, так как структура JS может меняться
-          const jsonMatch = content.match(/\{.*?"id"\s*:\s*"evt_.*?"\}/s); 
-          if (jsonMatch) {
-             // Если нашли похожий кусок, можно попробовать распарсить
-             // Но чаще всего данные лежат в window.__INITIAL_STATE__ или类似变量
-          }
-        } catch(e) {}
-      }
+    const event = res.data;
+    if (!event) {
+      console.log('No upcoming events found');
+      return null;
     }
 
-    // Попытка 2: Прямой поиск через DOM-like структуру, если VRChat отдает SSR часть
-    // Используем простую regexp-логику для поиска карточек, если они есть в HTML
-    // Обычно VRChat рендерит <div class="event-card"> или类似结构 в SSR для SEO
-    
-    // ВНИМАНИЕ: Если VRChat полностью клиентский, этот метод вернет null.
-    // Но так как ты требуешь именно отсюда, мы делаем всё возможное на стороне Node.js
-    
-    // Альтернатива: Использовать публичный API поиска миров/ивентов, если он доступен для группы
-    // К сожалению, официального эндпоинта нет.
-    
-    //Fallback: Если парсинг HTML не дал результата, проверяем, не лежит ли информация в meta тегах или специфичных скриптах
-    const titleMatch = html.match(/<title>(.*?)<\/title>/);
-    console.log(`Page Title: ${titleMatch ? titleMatch[1] : 'Unknown'}`);
+    const startDate = new Date(event.startTime || event.startDate);
+    console.log(`Next event: ${event.name} on ${startDate.toLocaleDateString('ru-RU')}`);
 
-    // Поскольку точный парсер написать невозможно без знания текущей внутренней структуры JS VRChat,
-    // я добавлю сюда логику, которая пытается найти ближайшую дату в тексте страницы
-    // Это "грязный" хак, но иногда работает для простых страниц
-    
-    // ЕСЛИ НИЧЕГО НЕ НАШЛОСЬ:
-    // Вернем null, чтобы сайт показал заглушку, а не фейковые данные из инстансов
-    console.warn('HTML parsing finished. If no event found, VRChat likely renders it purely client-side.');
-    
-    // ДЛЯ ТЕСТА: Вернем заглушку, чтобы проверить, доходит ли код до сайта
-    // УБЕРИ ЭТОТ БЛОК, КОГДА НАЙДЕШЬ ПРАВИЛЬНЫЙ СЕЛЕКТОР ИЛИ ЕСЛИ VRChat ОТДАСТ ДАННЫЕ
-    /* 
     return {
-        name: "Тестовый ивент (Парсинг не сработал)",
-        date: new Date().toLocaleDateString('ru-RU'),
-        time: "00:00",
-        world: "Проверь консоль",
-        description: "VRChat не отдал данные в HTML"
+      name: event.name || 'Ивент',
+      description: event.description || '',
+      date: startDate.toLocaleDateString('ru-RU'),
+      time: startDate.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }),
+      world: event.world?.name || event.location || '–',
     };
-    */
-   
-   return null; 
-
   } catch (e) {
-    console.error('Event parsing error:', e.message);
+    console.warn('Calendar API fetch failed:', e.response?.status, e.response?.data || e.message);
     return null;
   }
 }
@@ -163,7 +112,6 @@ async function fetchGallery(cookies) {
     const groupRes = await axios.get(`${BASE_URL}/groups/${GROUP_ID}`, { headers });
     const galleries = groupRes.data.galleries || [];
     
-    // СТРОГИЙ ПОИСК ПО НАЗВАНИЮ
     const targetGallery = galleries.find(g => g.name === 'Фотографии группы');
     
     if (!targetGallery) {
@@ -190,17 +138,18 @@ async function main() {
   try {
     safeGitUpdate();
     const cookies = await login();
-    const headers = { 'Cookie': cookies, 'User-Agent': USER_AGENT };
 
     // Участники
-    const groupRes = await axios.get(`${BASE_URL}/groups/${GROUP_ID}`, { headers });
+    const groupRes = await axios.get(`${BASE_URL}/groups/${GROUP_ID}`, {
+      headers: { 'Cookie': cookies, 'User-Agent': USER_AGENT }
+    });
     const members = groupRes.data.memberCount || 0;
     console.log(`Members: ${members}`);
 
-    // Ивенты (Парсинг страницы /events)
-    let nextEvent = await parsePlannedEvents(cookies);
+    // Ивенты через правильный эндпоинт calendar
+    let nextEvent = await fetchNextEvent(cookies);
     
-    // Галерея (Строгий поиск по имени)
+    // Галерея
     const gallery = await fetchGallery(cookies);
     console.log(`Gallery: ${gallery.length} images`);
 
