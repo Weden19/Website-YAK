@@ -13,15 +13,13 @@
 
   <header class="site-header">
     <div class="container">
-      <div class="logo">
+      <a href="index.html" class="logo">
         <img src="assets/logo.png" alt="Логотип" class="logo-img">
         <span class="logo-text">АКАДЕМИЯ ЯКОВЛЕВА</span>
-      </div>
+      </a>
       <nav class="nav">
-        <a href="#about" class="nav-link">О группе</a>
-        <a href="#events" class="nav-link">Ивенты</a>
-        <a href="#team" class="nav-link">Состав</a>
-        <a href="#files" class="nav-link">Файлы</a>
+        <a href="rules.html" class="nav-link">Правила</a>
+        <a href="members.html" class="nav-link">Для участников</a>
       </nav>
       <button class="burger" aria-label="Меню" onclick="toggleMenu()">
         <span></span><span></span><span></span>
@@ -30,10 +28,8 @@
   </header>
 
   <nav class="mobile-nav" id="mobileNav">
-    <a href="#about" onclick="closeMenu()">О группе</a>
-    <a href="#events" onclick="closeMenu()">Ивенты</a>
-    <a href="#team" onclick="closeMenu()">Состав</a>
-    <a href="#files" onclick="closeMenu()">Файлы</a>
+    <a href="rules.html" onclick="closeMenu()">Правила</a>
+    <a href="members.html" onclick="closeMenu()">Для участников</a>
   </nav>
 
   <main>
@@ -43,7 +39,7 @@
       <div class="container">
         <p class="hero-tag">VRChat Community</p>
         <h1 class="hero-title">Академия<br>Яковлева</h1>
-        <p class="hero-desc">Полу-РП авиационная группа в VRChat. Популяризация авиации, обучение пилотированию и теории — с упором в реализм.</p>
+        <p class="hero-desc">Полу-РП авиационная группа в VRChat. Популяризация авиации, обучение пилотированию и теории – с упором в реализм.</p>
         <div class="big-buttons">
           <a href="https://discord.gg/yakovlev-academy" target="_blank" class="btn-big btn-big-discord">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>
@@ -73,24 +69,22 @@
     <!-- ABOUT -->
     <section class="section" id="about">
       <div class="container">
-        <p class="section-label">О группе</p>
-        <h2 class="section-title">Кто мы</h2>
+        <h2 class="section-title">О группе</h2>
         <div class="about-grid">
           <div class="about-text">
-            <p>Полу-РП авиационная группа в VRChat. Популяризация авиации, обучение пилотированию и теории — с упором в реализм.</p>
+            <p>Полу-РП авиационная группа в VRChat. Популяризация авиации, обучение пилотированию и теории – с упором в реализм.</p>
             <details class="about-details">
               <summary>Читать подробнее</summary>
               <div class="about-details-content">
-                <p>Авиация — это гораздо больше, чем способность поднять самолёт в воздух. За каждым уверенным взлётом стоят часы обучения, понимание устройства воздушного судна, знание его возможностей и ограничений, умение принимать решения и сохранять спокойствие в самых разных ситуациях. Именно поэтому была создана <strong>Академия Яковлева</strong>.</p>
-                <p>Полное название сообщества — <strong>«ВВА ВКС РФ им. А. С. Яковлева»</strong>. Несмотря на стилистику и название, Академия не имеет отношения к Министерству обороны Российской Федерации и является полностью самостоятельным вымышленным проектом. Мы вдохновляемся настоящей авиацией, её принципами и традициями, но создаём собственный мир, в котором каждый желающий может познакомиться с авиацией настолько глубоко, насколько ему самому интересно.</p>
-                <p>Главная цель Академии — сделать авиацию понятной, доступной и по-настоящему увлекательной. Мы стремимся не просто научить участников выполнять стандартные действия в игре, а объяснить, почему пилоты принимают именно такие решения, как устроены самолёты и что скрывается за авиационными терминами.</p>
-                <p>Мы придерживаемся принципов реализма, однако понимаем, что игра прежде всего должна приносить удовольствие. Мы не требуем отыгрыша ролей, не заставляем следовать сложным формальностям и не превращаем обучение в бесконечную бюрократию. Реализм для нас — инструмент, позволяющий сделать полёты более интересными и осмысленными, а не самоцель.</p>
+                <p>Авиация – это гораздо больше, чем способность поднять самолёт в воздух. За каждым уверенным взлётом стоят часы обучения, понимание устройства воздушного судна, знание его возможностей и ограничений, умение принимать решения и сохранять спокойствие в самых разных ситуациях. Именно поэтому была создана <strong>Академия Яковлева</strong>.</p>
+                <p>Полное название сообщества – <strong>«ВВА ВКС РФ им. А. С. Яковлева»</strong>. Несмотря на стилистику и название, Академия не имеет отношения к Министерству обороны Российской Федерации и является полностью самостоятельным вымышленным проектом.</p>
+                <p>Главная цель Академии – сделать авиацию понятной, доступной и по-настоящему увлекательной. Мы не требуем отыгрыша ролей, не заставляем следовать сложным формальностям. Реализм для нас – инструмент, а не самоцель.</p>
               </div>
             </details>
           </div>
-          <div class="stats-grid" id="statsGrid">
+          <div class="stats-grid">
             <div class="stat-card">
-              <span class="stat-num" id="stat-members">—</span>
+              <span class="stat-num" id="stat-members">–</span>
               <span class="stat-label">Участников</span>
             </div>
             <div class="stat-card">
@@ -98,11 +92,11 @@
               <span class="stat-label">Ивентов</span>
             </div>
             <div class="stat-card">
-              <span class="stat-num" id="stat-worlds">—</span>
+              <span class="stat-num" id="stat-worlds">–</span>
               <span class="stat-label">Собственных миров</span>
             </div>
             <div class="stat-card">
-              <span class="stat-num" id="stat-since">—</span>
+              <span class="stat-num">2025</span>
               <span class="stat-label">С года</span>
             </div>
           </div>
@@ -110,14 +104,30 @@
       </div>
     </section>
 
-    <!-- EVENTS -->
-    <section class="section section-alt" id="events">
+    <!-- SLIDER -->
+    <section class="section section-alt slider-section">
       <div class="container">
-        <p class="section-label">Ивенты</p>
+        <h2 class="section-title">Галерея</h2>
+      </div>
+      <div class="slider">
+        <div class="slider-track" id="sliderTrack">
+          <div class="slider-slide active">
+            <div class="slider-placeholder">Фото загружаются...</div>
+          </div>
+        </div>
+        <button class="slider-btn slider-prev" onclick="sliderPrev()">‹</button>
+        <button class="slider-btn slider-next" onclick="sliderNext()">›</button>
+        <div class="slider-dots" id="sliderDots"></div>
+      </div>
+    </section>
+
+    <!-- EVENTS -->
+    <section class="section" id="events">
+      <div class="container">
         <h2 class="section-title">Расписание</h2>
 
         <div class="events-block">
-          <p class="events-block-label">Регулярные</p>
+          <p class="events-block-label">Ближайший ивент</p>
           <div id="regularEvents" class="events-list">
             <div class="event-skeleton"></div>
           </div>
@@ -134,97 +144,59 @@
     </section>
 
     <!-- TEAM -->
-    <section class="section" id="team">
+    <section class="section section-alt" id="team">
       <div class="container">
-        <p class="section-label">Состав</p>
         <h2 class="section-title">Организаторы</h2>
         <div class="team-grid">
-
           <div class="team-card">
-            <img src="assets/team/tabelnik.png" alt="Табельник" class="team-avatar-img" onerror="avatarFallback(this)">
+            <div class="team-avatar" data-name="Табельник"></div>
             <div class="team-info">
               <p class="team-name">Табельник</p>
               <p class="team-role">Организатор</p>
             </div>
           </div>
-
           <div class="team-card">
-            <img src="assets/team/waltergray.png" alt="Walter Gray" class="team-avatar-img" onerror="avatarFallback(this)">
+            <div class="team-avatar" data-name="Walter Gray"></div>
             <div class="team-info">
               <p class="team-name">Walter Gray</p>
               <p class="team-role">Катодел</p>
             </div>
           </div>
-
           <div class="team-card">
-            <img src="assets/team/weden19.png" alt="Weden19" class="team-avatar-img" onerror="avatarFallback(this)">
+            <div class="team-avatar" data-name="Weden19"></div>
             <div class="team-info">
               <p class="team-name">Weden19</p>
               <p class="team-role">Дизайнер</p>
             </div>
           </div>
-
           <div class="team-card">
-            <img src="assets/team/yarik.png" alt="Ярик ПолуКринж" class="team-avatar-img" onerror="avatarFallback(this)">
+            <div class="team-avatar" data-name="Ярик ПолуКринж"></div>
             <div class="team-info">
               <p class="team-name">Ярик ПолуКринж</p>
               <p class="team-role">Суетолог</p>
             </div>
           </div>
-
           <div class="team-card">
-            <img src="assets/team/rudt.png" alt="Rudt" class="team-avatar-img" onerror="avatarFallback(this)">
+            <div class="team-avatar" data-name="Rudt"></div>
             <div class="team-info">
               <p class="team-name">Rudt</p>
               <p class="team-role">Модератор</p>
             </div>
           </div>
-
           <div class="team-card">
-            <img src="assets/team/thehumancanon.png" alt="TheHumanCanon" class="team-avatar-img" onerror="avatarFallback(this)">
+            <div class="team-avatar" data-name="TheHumanCanon"></div>
             <div class="team-info">
               <p class="team-name">TheHumanCanon</p>
               <p class="team-role">Инструктор</p>
             </div>
           </div>
-
           <div class="team-card">
-            <img src="assets/team/tektinok.png" alt="Tektinok" class="team-avatar-img" onerror="avatarFallback(this)">
+            <div class="team-avatar" data-name="Tektinok"></div>
             <div class="team-info">
               <p class="team-name">Tektinok</p>
               <p class="team-role">Фотограф</p>
             </div>
           </div>
-
-        </div>
-      </div>
-    </section>
-
-    <!-- FILES -->
-    <section class="section section-alt" id="files">
-      <div class="container">
-        <p class="section-label">Файлы</p>
-        <h2 class="section-title">Для участников</h2>
-        <div class="files-grid">
-
-          <div class="file-category">
-            <p class="file-cat-label">Страницы</p>
-            <div class="file-list">
-              <a href="rules.html" class="file-item">
-                <span class="file-icon">→</span>
-                <div class="file-meta">
-                  <span class="file-name">Правила группы</span>
-                </div>
-              </a>
-              <a href="avatars.html" class="file-item">
-                <span class="file-icon">→</span>
-                <div class="file-meta">
-                  <span class="file-name">Правила аватаров и ассеты</span>
-                </div>
-              </a>
-            </div>
-          </div>
-
         </div>
       </div>
     </section>
@@ -237,7 +209,7 @@
         <img src="assets/logo.png" alt="Логотип" class="logo-img">
         <span class="logo-text">АКАДЕМИЯ ЯКОВЛЕВА</span>
       </div>
-      <p class="footer-copy">VRChat · © 2026</p>
+      <p class="footer-copy">VRChat · © 2025</p>
     </div>
   </footer>
 
