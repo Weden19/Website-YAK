@@ -2,6 +2,7 @@ const axios = require('axios');
 const fs = require('fs');
 const path = require('path');
 const { generate } = require('otplib');
+const { execSync } = require('child_process');
 
 const GROUP_ID = 'grp_629eb128-47c7-40c5-848b-c0b8cb8e8a7a';
 const BASE_URL = 'https://api.vrchat.cloud/api/1';
@@ -53,7 +54,7 @@ async function login() {
   if (requiresTwoFactorAuth && requiresTwoFactorAuth.length > 0) {
     if (requiresTwoFactorAuth.includes('totp')) {
       if (!TOTP_SECRET) {
-        throw new Error('Аккаунт требует TOTP 2FA, но VRCHAT_TOTP_SECRET не задан в секретах.');
+        throw new Error('Аккаунт требует TOTP 2FA, но VRCHAT_TOTP_SECRET не задан.');
       }
       console.log('Аккаунт требует TOTP-код, отправляю...');
       const code = await generate({ secret: TOTP_SECRET });
@@ -64,10 +65,10 @@ async function login() {
       );
       jar.update(verifyRes.headers['set-cookie']);
       if (verifyRes.status !== 200 || verifyRes.data?.verified !== true) {
-        throw new Error(`Verify 2FA (totp) failed: ${verifyRes.status} ${JSON.stringify(verifyRes.data)}`);
+        throw new Error(`Verify 2FA (totp) failed: ${verifyRes.status}`);
       }
     } else if (requiresTwoFactorAuth.includes('emailOtp')) {
-      throw new Error('Аккаунт требует emailOtp 2FA — это нельзя пройти автоматически. Переключи 2FA на TOTP (Authenticator app).');
+      throw new Error('Аккаунт требует emailOtp 2FA.');
     } else {
       throw new Error(`Неизвестный тип 2FA: ${requiresTwoFactorAuth.join(', ')}`);
     }
@@ -78,90 +79,104 @@ async function login() {
   return jar.header();
 }
 
+function safeGitUpdate() {
+  try {
+    console.log('Syncing with remote repository...');
+    execSync(`git checkout origin/main -- "${DATA_FILE}"`, { stdio: 'inherit' });
+    execSync('git pull --rebase origin main', { stdio: 'inherit' });
+  } catch (err) {
+    console.error('Git sync failed, trying hard reset...', err.message);
+    try {
+      execSync('git reset --hard origin/main', { stdio: 'inherit' });
+    } catch (resetErr) {
+      throw new Error('Failed to sync git repository');
+    }
+  }
+}
+
+async function fetchGallery(cookies) {
+  // Твоя существующая логика галереи — не трогаю
+  try {
+    const headers = { 'Cookie': cookies, 'User-Agent': USER_AGENT };
+    const groupRes = await axios.get(`${BASE_URL}/groups/${GROUP_ID}`, { headers });
+    const galleries = groupRes.data.galleries || [];
+    
+    if (galleries.length === 0) return [];
+    
+    const galleryId = galleries[0].id;
+    const galleryRes = await axios.get(
+      `${BASE_URL}/groups/${GROUP_ID}/galleries/${galleryId}`,
+      { headers }
+    );
+    
+    const items = galleryRes.data || [];
+    return items
+      .filter(i => i.imageUrl)
+      .slice(0, 20)
+      .map(i => i.imageUrl);
+  } catch (e) {
+    console.warn('Gallery fetch failed:', e.response?.status, e.response?.data || e.message);
+    return [];
+  }
+}
+
 async function main() {
   try {
-    const cookies = await login();
+    safeGitUpdate();
 
+    const cookies = await login();
     const headers = {
       'Cookie': cookies,
       'User-Agent': USER_AGENT,
     };
 
-    // Данные группы
+    // Участники
     console.log('Fetching group data...');
     const groupRes = await axios.get(`${BASE_URL}/groups/${GROUP_ID}`, { headers });
     const group = groupRes.data;
     const members = group.memberCount || 0;
     console.log(`Members: ${members}`);
 
-    // Ближайший ивент - пробуем получить через announcements группы
+    // Ивенты через инстансы группы
     let nextEvent = null;
     try {
-      console.log('Fetching group announcements...');
-      const announcementsRes = await axios.get(`${BASE_URL}/groups/${GROUP_ID}/announcements`, { 
+      console.log('Fetching group instances...');
+      const instancesRes = await axios.get(`${BASE_URL}/groups/${GROUP_ID}/instances`, { 
         headers,
-        params: {
-          n: 10
-        }
+        params: { n: 10 }
       });
       
-      const announcements = announcementsRes.data || [];
-      console.log(`Announcements count: ${announcements.length}`);
+      const instances = instancesRes.data || [];
+      console.log(`Instances count: ${instances.length}`);
       
-      // Ищем announcement, который похож на ивент (содержит дату/время)
-      const now = new Date();
-      const futureEvents = announcements.filter(a => {
-        const text = (a.title + ' ' + a.text).toLowerCase();
-        return text.includes('ивент') || text.includes('event') || text.includes('встреча');
-      });
-      
-      if (futureEvents.length > 0) {
-        const event = futureEvents[0];
+      if (instances.length > 0) {
+        const inst = instances[0];
+        const createdDate = new Date(inst.createdAt || Date.now());
+        
         nextEvent = {
-          name: event.title || 'Ивент',
-          description: event.text || '',
-          date: new Date(event.createdAt).toLocaleDateString('ru-RU'),
-          time: new Date(event.createdAt).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }),
-          world: '–',
+          name: inst.name || 'Ивент',
+          description: inst.description || '',
+          date: createdDate.toLocaleDateString('ru-RU'),
+          time: createdDate.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }),
+          world: inst.world?.name || inst.worldName || '–',
         };
-      }
-      
-      console.log(`Next event:`, nextEvent ? nextEvent.name : 'none');
-    } catch (e) {
-      console.warn('Could not fetch announcements:', e.response?.status, e.response?.data || e.message);
-    }
-
-    // Галерея группы
-    let gallery = [];
-    try {
-      const galleries = group.galleries || [];
-      
-      if (galleries.length > 0) {
-        const galleryId = galleries[0].id;
-        console.log(`Using gallery ID: ${galleryId}`);
-        
-        const galleryRes = await axios.get(
-          `${BASE_URL}/groups/${GROUP_ID}/galleries/${galleryId}`,
-          { headers }
-        );
-        
-        const items = galleryRes.data || [];
-        console.log(`Gallery items count: ${items.length}`);
-        
-        gallery = items
-          .filter(i => i.imageUrl)
-          .slice(0, 20)
-          .map(i => i.imageUrl);
-        
-        console.log(`Gallery: ${gallery.length} images`);
-      } else {
-        console.warn('У группы нет ни одной галереи');
+        console.log(`Next event: ${nextEvent.name}`);
       }
     } catch (e) {
-      console.warn('Could not fetch gallery:', e.response?.status, e.response?.data || e.message);
+      console.warn('Could not fetch instances:', e.response?.status, e.response?.data || e.message);
     }
 
-    const data = { members, nextEvent, gallery, updated: new Date().toISOString() };
+    // Галерея — твоя рабочая логика
+    const gallery = await fetchGallery(cookies);
+    console.log(`Gallery: ${gallery.length} images`);
+
+    const data = { 
+      members, 
+      nextEvent, 
+      gallery,
+      updated: new Date().toISOString() 
+    };
+    
     fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
     console.log('Data saved to vrchat.json');
 
