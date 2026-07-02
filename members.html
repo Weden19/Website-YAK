@@ -45,8 +45,16 @@
     <section class="section">
       <div class="container">
         <h2 class="section-title">Правила аватаров</h2>
-        <p class="avatars-intro">Раздел в разработке. Здесь появятся требования к аватарам участников группы.</p>
-        <span class="coming-soon">⏳ Скоро</span>
+        <p class="avatars-intro">Требования к оформлению служебных аватаров участников Академии Яковлева.</p>
+        <div class="rules-deck">
+          <div class="rules-deck-viewport" id="rulesDeckViewport"></div>
+          <div class="rules-deck-controls">
+            <button class="rules-nav-btn" id="rulesPrevBtn" onclick="rulesDeckPrev()" aria-label="Назад">‹</button>
+            <div class="rules-deck-dots" id="rulesDeckDots"></div>
+            <span class="rules-deck-counter" id="rulesDeckCounter"></span>
+            <button class="rules-nav-btn" id="rulesNextBtn" onclick="rulesDeckNext()" aria-label="Вперёд">›</button>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -100,6 +108,7 @@
     </div>
   </footer>
 
+  <script src="js/rules-deck.js"></script>
   <script>
     function toggleMenu() { document.getElementById('mobileNav').classList.toggle('open'); }
     function closeMenu() { document.getElementById('mobileNav').classList.remove('open'); }
