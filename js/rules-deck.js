@@ -103,7 +103,7 @@ const RULES_SLIDES = [
           { type: 'allowed', label: 'Левое плечо', items: ['Флаг РФ', 'Либо флаг страны происхождения', 'Либо флаг исторического государства'] },
         ],
       },
-      { type: 'image', src: 'assets/rules/Chev-Officer.png', alt: 'шеврон офицера из Приказа №102-р' }
+      { type: 'image', src: 'assets/rules/Chev-Officer.png', alt: 'шеврон офицера из Приказа №102-р' },
       { type: 'image', src: 'assets/rules/Chev-Recruit.png', alt: 'шеврон курсанта из Приказа №102-р' },
       {
         type: 'text',
