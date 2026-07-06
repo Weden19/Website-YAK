@@ -55,7 +55,7 @@
               <span class="btn-big-sub">Открыть группу</span>
             </div>
           </a>
-          <a href="https://boosty.to/yakovlevforever/donate" target="_blank" class="btn-big btn-big-da">
+          <a href="https://boosty.to/yakovlevforever/donate" target="_blank" class="btn-big btn-big-boosty">
             <img src="assets/icons/boosty.png" width="24" height="24" alt="Boosty">
             <div class="btn-big-label">
               <span class="btn-big-title">Boosty</span>
@@ -110,14 +110,13 @@
         <h2 class="section-title">Галерея</h2>
       </div>
       <div class="slider">
-        <div class="slider-track" id="sliderTrack">
-          <div class="slider-slide active">
-            <div class="slider-placeholder">Фото загружаются...</div>
-          </div>
+        <div class="slider-viewport" id="sliderViewport">
+          <div class="slider-placeholder">Фото загружаются...</div>
         </div>
         <button class="slider-btn slider-prev" onclick="sliderPrev()">‹</button>
         <button class="slider-btn slider-next" onclick="sliderNext()">›</button>
         <div class="slider-dots" id="sliderDots"></div>
+        <div class="slider-counter"><span id="sliderCurrent">1</span> / <span id="sliderTotal">1</span></div>
       </div>
     </section>
 
@@ -125,21 +124,18 @@
     <section class="section" id="events">
       <div class="container">
         <h2 class="section-title">Расписание</h2>
-
         <div class="events-block">
           <p class="events-block-label">Ближайший ивент</p>
           <div id="regularEvents" class="events-list">
             <div class="event-skeleton"></div>
           </div>
         </div>
-
         <div class="events-block">
           <p class="events-block-label">Специальные</p>
           <div id="specialEvents" class="events-list">
             <div class="event-skeleton"></div>
           </div>
         </div>
-
       </div>
     </section>
 
@@ -150,53 +146,97 @@
         <div class="team-grid">
           <a class="team-card" href="https://vrchat.com/home/user/usr_67157ee2-6d18-4c86-8f39-8833dfd35052" target="_blank" rel="noopener">
             <div class="team-avatar" data-name="Табельник"></div>
-            <div class="team-info">
-              <p class="team-name">Табельник</p>
-              <p class="team-role">Организатор</p>
-            </div>
+            <div class="team-info"><p class="team-name">Табельник</p><p class="team-role">Организатор</p></div>
           </a>
           <a class="team-card" href="https://vrchat.com/home/user/usr_bfe2b4db-213e-49bd-a9bc-842fb0bd7137" target="_blank" rel="noopener">
             <div class="team-avatar" data-name="Walter Gray"></div>
-            <div class="team-info">
-              <p class="team-name">Walter Gray</p>
-              <p class="team-role">Картодел</p>
-            </div>
+            <div class="team-info"><p class="team-name">Walter Gray</p><p class="team-role">Картодел</p></div>
           </a>
           <a class="team-card" href="https://vrchat.com/home/user/usr_9c7b8761-e0fc-4bcc-aa69-f69ea1269a4c" target="_blank" rel="noopener">
             <div class="team-avatar" data-name="Weden19"></div>
-            <div class="team-info">
-              <p class="team-name">Weden19</p>
-              <p class="team-role">Дизайнер</p>
-            </div>
+            <div class="team-info"><p class="team-name">Weden19</p><p class="team-role">Дизайнер</p></div>
           </a>
           <a class="team-card" href="https://vrchat.com/home/user/usr_22d566cd-25e3-486d-b139-5088d956511a" target="_blank" rel="noopener">
             <div class="team-avatar" data-name="Ярик ПолуКринж"></div>
-            <div class="team-info">
-              <p class="team-name">Ярик ПолуКринж</p>
-              <p class="team-role">Суетолог</p>
-            </div>
+            <div class="team-info"><p class="team-name">Ярик ПолуКринж</p><p class="team-role">Суетолог</p></div>
           </a>
           <a class="team-card" href="https://vrchat.com/home/user/usr_e41d0993-f177-49b7-b9fb-0559db514ff5" target="_blank" rel="noopener">
             <div class="team-avatar" data-name="Rudt"></div>
-            <div class="team-info">
-              <p class="team-name">Rudt</p>
-              <p class="team-role">Модератор</p>
-            </div>
+            <div class="team-info"><p class="team-name">Rudt</p><p class="team-role">Модератор</p></div>
           </a>
           <a class="team-card" href="https://vrchat.com/home/user/usr_da33e872-2483-434d-8c21-9bb452c489d2" target="_blank" rel="noopener">
             <div class="team-avatar" data-name="TheHumanCanon"></div>
-            <div class="team-info">
-              <p class="team-name">TheHumanCanon</p>
-              <p class="team-role">Инструктор</p>
-            </div>
+            <div class="team-info"><p class="team-name">TheHumanCanon</p><p class="team-role">Инструктор</p></div>
           </a>
           <a class="team-card" href="https://vrchat.com/home/user/usr_15a5525e-0189-4797-ae8f-a8edb4a786bd" target="_blank" rel="noopener">
             <div class="team-avatar" data-name="Tektinok"></div>
-            <div class="team-info">
-              <p class="team-name">Tektinok</p>
-              <p class="team-role">Фотограф</p>
-            </div>
+            <div class="team-info"><p class="team-name">Tektinok</p><p class="team-role">Фотограф</p></div>
           </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- FLEET -->
+    <section class="section" id="fleet">
+      <div class="container">
+        <h2 class="section-title">Наша техника</h2>
+        <div class="fleet-list">
+
+          <div class="fleet-item">
+            <div class="fleet-viewer">
+              <model-viewer src="assets/models/Yak-130.glb" alt="Як-130" auto-rotate camera-controls disable-zoom shadow-intensity="0" exposure="0.8" tone-mapping="neutral" style="width:100%;height:100%;background:transparent;"></model-viewer>
+            </div>
+            <div class="fleet-info">
+              <div class="fleet-status fleet-status-active">В строю</div>
+              <h3 class="fleet-name">Як-130</h3>
+              <p class="fleet-desc">Учебно-боевой самолёт нового поколения. Основа лётной подготовки Академии – именно на нём курсанты осваивают технику пилотирования, навигацию и боевое применение перед переходом на более тяжёлые машины.</p>
+            </div>
+          </div>
+
+          <div class="fleet-item fleet-item-reverse">
+            <div class="fleet-viewer">
+              <model-viewer src="assets/models/Su-30SM2.glb" alt="Су-30СМ2" auto-rotate camera-controls disable-zoom shadow-intensity="0" exposure="0.8" tone-mapping="neutral" style="width:100%;height:100%;background:transparent;"></model-viewer>
+            </div>
+            <div class="fleet-info">
+              <div class="fleet-status fleet-status-incoming">Ожидается прибытие: перегонка с завода-изготовителя</div>
+              <h3 class="fleet-name">Су-30СМ2</h3>
+              <p class="fleet-desc">Модернизированный многоцелевой истребитель с расширенными возможностями применения высокоточного оружия. Глубокая модернизация Су-30СМ с новой авионикой и двигателями от Су-35С.</p>
+            </div>
+          </div>
+
+          <div class="fleet-item">
+            <div class="fleet-viewer">
+              <model-viewer src="assets/models/MiG-31BM.glb" alt="МиГ-31БМ" auto-rotate camera-controls disable-zoom shadow-intensity="0" exposure="0.8" tone-mapping="neutral" style="width:100%;height:100%;background:transparent;"></model-viewer>
+            </div>
+            <div class="fleet-info">
+              <div class="fleet-status fleet-status-active">В строю</div>
+              <h3 class="fleet-name">МиГ-31БМ</h3>
+              <p class="fleet-desc">Сверхзвуковой истребитель-перехватчик дальнего радиуса действия. Один из немногих самолётов в мире, способных перехватывать цели на больших высотах и скоростях. Несёт мощный радар и ракеты большой дальности.</p>
+            </div>
+          </div>
+
+          <div class="fleet-item fleet-item-reverse">
+            <div class="fleet-viewer">
+              <model-viewer src="assets/models/Mi-8AMTSh-VN.glb" alt="Ми-8 АМТШ-ВН" auto-rotate camera-controls disable-zoom shadow-intensity="0" exposure="0.8" tone-mapping="neutral" style="width:100%;height:100%;background:transparent;"></model-viewer>
+            </div>
+            <div class="fleet-info">
+              <div class="fleet-status fleet-status-active">В строю</div>
+              <h3 class="fleet-name">Ми-8 АМТШ-ВН</h3>
+              <p class="fleet-desc">Штурмовой военно-транспортный вертолёт в различных модификациях. Версия АМТШ-ВН оснащена современными прицельными комплексами для работы в ночных условиях и при плохой видимости.</p>
+            </div>
+          </div>
+
+          <div class="fleet-item">
+            <div class="fleet-viewer fleet-viewer-placeholder">
+              <img src="assets/models/PlanMTO.png" alt="В плане МТО" class="fleet-placeholder-img">
+            </div>
+            <div class="fleet-info">
+              <div class="fleet-status fleet-status-planned">В плане МТО</div>
+              <h3 class="fleet-name">Ми-28НМ</h3>
+              <p class="fleet-desc">Модернизированный ударный вертолёт «Ночной охотник». Новейшая версия с надвтулочным радаром, обновлённой авионикой и расширенным составом вооружения. Поступление в состав Академии планируется.</p>
+            </div>
+          </div>
+
         </div>
       </div>
     </section>
@@ -214,5 +254,6 @@
   </footer>
 
   <script src="js/main.js"></script>
+  <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
 </body>
 </html>
