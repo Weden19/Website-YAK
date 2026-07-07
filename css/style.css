@@ -355,6 +355,8 @@ body {
   align-items: center;
   gap: 14px;
   transition: border-color 0.15s, transform 0.15s;
+  text-decoration: none;
+  color: inherit;
 }
 
 .team-card:hover {
