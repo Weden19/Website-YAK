@@ -965,8 +965,8 @@ body {
   grid-template-columns: 1fr 280px;
 }
 
-.fleet-item-reverse .fleet-viewer { order: 2; }
 .fleet-item-reverse .fleet-info { order: 1; }
+.fleet-item-reverse .fleet-viewer { order: 2; }
 
 .fleet-viewer {
   width: 280px;
@@ -1025,9 +1025,14 @@ body {
     grid-template-columns: 1fr;
   }
 
-  .fleet-item-reverse .fleet-viewer,
+  .fleet-item .fleet-info,
   .fleet-item-reverse .fleet-info {
-    order: unset;
+    order: 1;
+  }
+
+  .fleet-item .fleet-viewer,
+  .fleet-item-reverse .fleet-viewer {
+    order: 2;
   }
 
   .fleet-viewer {
