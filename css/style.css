@@ -956,7 +956,7 @@ body {
 
 .fleet-item {
   display: grid;
-  grid-template-columns: 280px 1fr;
+  grid-template-columns: 1fr 280px;
   gap: 48px;
   align-items: center;
 }
