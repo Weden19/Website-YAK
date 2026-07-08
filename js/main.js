@@ -100,11 +100,11 @@ async function loadVRChatData() {
           <div class="event-card event-upcoming">
             <div class="event-badge">Скоро</div>
             <div class="event-body">
-              <p class="event-date">${e.date} · ${e.time} МСК</p>
+              <p class="event-date">${e.date} · ${e.time + 3 * 60 * 60 * 1000} МСК</p>
               <h3 class="event-name">${e.name}</h3>
               ${e.description ? `<p class="event-desc">${e.description}</p>` : ''}
             </div>
-            <div class="event-world">Мир: <span>${e.world || 'Загадка'}</span></div>
+            <div class="event-world">Мир: <span>${e.world || 'загадка'}</span></div>
           </div>
         `;
       } else {
