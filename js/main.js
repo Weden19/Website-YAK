@@ -96,16 +96,29 @@ async function loadVRChatData() {
     if (regularContainer) {
       if (data.nextEvent) {
         const e = data.nextEvent;
+
+        const eventDate = new Date(e.time);
+
+        const dateMSK = eventDate.toLocaleDateString('ru-RU', {
+          timeZone: 'Europe/Moscow'
+        });
+
+        const timeMSK = eventDate.toLocaleTimeString('ru-RU', {
+          timeZone: 'Europe/Moscow',
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+
         regularContainer.innerHTML = `
           <div class="event-card event-upcoming">
-            <div class="event-badge">Скоро</div>
-            <div class="event-body">
-              <p class="event-date">${e.date} · ${e.time + 3 * 60 * 60 * 1000} МСК</p>
-              <h3 class="event-name">${e.name}</h3>
-              ${e.description ? `<p class="event-desc">${e.description}</p>` : ''}
+           <div class="event-badge">Скоро</div>
+           <div class="event-body">
+              <p class="event-date">${dateMSK} · ${timeMSK} МСК</p>
+             <h3 class="event-name">${e.name}</h3>
+             ${e.description ? `<p class="event-desc">${e.description}</p>` : ''}
             </div>
             <div class="event-world">Мир: <span>${e.world || 'загадка'}</span></div>
-          </div>
+         </div>
         `;
       } else {
         regularContainer.innerHTML = '<p class="events-empty">Пока нет запланированных ивентов</p>';
