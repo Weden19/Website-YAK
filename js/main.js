@@ -64,7 +64,7 @@ async function loadSpecialEvents() {
       const isUpcoming = r.status === 'upcoming';
       return `
         <div class="event-card ${isUpcoming ? 'event-upcoming' : ''}">
-          <div class="event-badge ${isUpcoming ? '' : 'event-badge-past'}">${isUpcoming ? 'Скоро' : 'Прошёл'}</div>
+          <div class="event-badge ${isUpcoming ? '' : 'event-badge-past'}">${isUpcoming ? '' : 'Прошёл'}</div>
           <div class="event-body">
             <p class="event-date">${r.date} · ${r.time} МСК</p>
             <h3 class="event-name">${r.name}</h3>
