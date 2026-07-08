@@ -17,13 +17,10 @@ function parseSheet(raw) {
           obj[cols[i]] = '';
           return;
         }
-        // Форматированное значение приоритетнее
         if (cell.f) {
           obj[cols[i]] = cell.f;
         } else if (typeof cell.v === 'string') {
           obj[cols[i]] = cell.v;
-        } else if (typeof cell.v === 'number') {
-          obj[cols[i]] = String(cell.v);
         } else {
           obj[cols[i]] = String(cell.v);
         }
@@ -36,6 +33,19 @@ async function fetchSheet(sheetName) {
   const res = await fetch(sheetUrl(sheetName));
   const text = await res.text();
   return parseSheet(text);
+}
+
+// ===== ФОРМАТИРОВАНИЕ ДАТЫ В МСК =====
+function formatDateMSK(isoString) {
+  if (!isoString) return '';
+  try {
+    const date = new Date(isoString);
+    const dateStr = date.toLocaleDateString('ru-RU', { timeZone: 'Europe/Moscow', day: '2-digit', month: '2-digit', year: 'numeric' });
+    const timeStr = date.toLocaleTimeString('ru-RU', { timeZone: 'Europe/Moscow', hour: '2-digit', minute: '2-digit' });
+    return `${dateStr} · ${timeStr} МСК`;
+  } catch (e) {
+    return isoString;
+  }
 }
 
 // ===== СТАТИСТИКА ИЗ SHEETS =====
@@ -91,7 +101,7 @@ async function loadVRChatData() {
     const membersEl = document.getElementById('stat-members');
     if (membersEl && data.members) membersEl.textContent = data.members;
 
-    // Ближайший ивент из VRChat
+    // Ближайший ивент
     const regularContainer = document.getElementById('regularEvents');
     if (regularContainer) {
       if (data.nextEvent) {
@@ -99,11 +109,11 @@ async function loadVRChatData() {
         regularContainer.innerHTML = `
           <div class="event-card event-upcoming">
             <div class="event-body">
-              <p class="event-date">${e.date} · ${e.time}</p>
+              <p class="event-date">${formatDateMSK(e.startDateTime || e.date)}</p>
               <h3 class="event-name">${e.name}</h3>
               ${e.description ? `<p class="event-desc">${e.description}</p>` : ''}
             </div>
-            <div class="event-world">Мир: <span>${e.world || 'загадка'}</span></div>
+            <div class="event-world">Мир: <span>${e.world || 'Загадка'}</span></div>
           </div>
         `;
       } else {
@@ -115,8 +125,8 @@ async function loadVRChatData() {
     if (data.gallery && data.gallery.length > 0) {
       initSlider(data.gallery);
     } else {
-      const track = document.getElementById('sliderTrack');
-      if (track) track.innerHTML = '<div class="slider-placeholder">Фото появятся после первого ивента</div>';
+      const viewport = document.getElementById('sliderViewport');
+      if (viewport) viewport.innerHTML = '<div class="slider-placeholder">Фото появятся после первого ивента</div>';
     }
 
   } catch (err) {
@@ -135,36 +145,41 @@ const sliderState = {
 };
 
 function initSlider(images) {
-  const track = document.getElementById('sliderTrack');
+  const viewport = document.getElementById('sliderViewport');
   const dotsContainer = document.getElementById('sliderDots');
+  const totalEl = document.getElementById('sliderTotal');
+  const currentEl = document.getElementById('sliderCurrent');
 
-  if (!track || !images || images.length === 0) return;
+  if (!viewport || !images || images.length === 0) return;
 
   sliderState.images = images;
   sliderState.current = 0;
 
-  track.innerHTML = '';
+  viewport.innerHTML = '';
   if (dotsContainer) dotsContainer.innerHTML = '';
 
   images.forEach((url, i) => {
     const slide = document.createElement('div');
-    slide.className = 'slider-slide' + (i === 0 ? ' active' : '');
+    slide.className = 'slider-slide' + (i === 0 ? ' is-active' : '');
     slide.dataset.index = i;
     const img = document.createElement('img');
     img.src = url;
     img.alt = `Фото ${i + 1}`;
     img.loading = i < 2 ? 'eager' : 'lazy';
     slide.appendChild(img);
-    track.appendChild(slide);
+    viewport.appendChild(slide);
 
     if (dotsContainer) {
       const dot = document.createElement('button');
-      dot.className = 'slider-dot' + (i === 0 ? ' active' : '');
+      dot.className = 'slider-dot' + (i === 0 ? ' is-active' : '');
       dot.setAttribute('aria-label', `Слайд ${i + 1}`);
       dot.onclick = () => goToSlide(i);
       dotsContainer.appendChild(dot);
     }
   });
+
+  if (totalEl) totalEl.textContent = images.length;
+  if (currentEl) currentEl.textContent = 1;
 
   startAutoPlay();
 }
@@ -172,15 +187,17 @@ function initSlider(images) {
 function goToSlide(index) {
   const slides = document.querySelectorAll('.slider-slide');
   const dots = document.querySelectorAll('.slider-dot');
+  const currentEl = document.getElementById('sliderCurrent');
   const total = sliderState.images.length;
   if (total === 0) return;
 
   const next = ((index % total) + total) % total;
-  slides[sliderState.current]?.classList.remove('active');
-  dots[sliderState.current]?.classList.remove('active');
+  slides[sliderState.current]?.classList.remove('is-active');
+  dots[sliderState.current]?.classList.remove('is-active');
   sliderState.current = next;
-  slides[next]?.classList.add('active');
-  dots[next]?.classList.add('active');
+  slides[next]?.classList.add('is-active');
+  dots[next]?.classList.add('is-active');
+  if (currentEl) currentEl.textContent = next + 1;
 }
 
 function startAutoPlay() {
