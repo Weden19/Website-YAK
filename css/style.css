@@ -520,8 +520,8 @@ body {
 .btn-big-da { background: #F15F2C; color: #fff; }
 .btn-big-da:hover { background: #d4521f; }
 
-.btn-big-boosty { background: #f4801a; color: #fff; }
-.btn-big-boosty:hover { background: #d96e10; }
+.btn-big-boosty { background: #F15F2C; color: #fff; }
+.btn-big-boosty:hover { background: #F15F2C; }
 
 .btn-big svg { flex-shrink: 0; }
 
