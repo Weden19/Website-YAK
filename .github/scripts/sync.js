@@ -3,7 +3,6 @@ const fs = require('fs');
 const path = require('path');
 
 const GROUP_ID = 'grp_629eb128-47c7-40c5-848b-c0b8cb8e8a7a';
-const GALLERY_NAME = 'Фотографии группы';
 const BASE_URL = 'https://api.vrchat.cloud/api/1';
 const DATA_FILE = path.join(__dirname, '../../data/vrchat.json');
 const UA = 'YakovlevAcademy/1.0.0 (bot; +discord.gg/yakovlev-academy)';
@@ -83,56 +82,44 @@ async function main() {
     const members = group.memberCount || 0;
     console.log(`Members: ${members}`);
 
-    // Ближайший запланированный ивент группы.
-    // /groups/{id}/instances показывает только то, что открыто ПРЯМО СЕЙЧАС (активные инстансы),
-    // поэтому раньше nextEvent всегда оставался null, если в момент запуска никто не сидел в мире.
-    // Правильный источник запланированных ивентов — отдельный Calendar API.
     let nextEvent = null;
     try {
-      const eventRes = await axios.get(`${BASE_URL}/calendar/${GROUP_ID}/next`, { headers });
-      const e = eventRes.data;
-      if (e) {
-        const starts = e.startsAt ? new Date(e.startsAt) : null;
+      const eventsRes = await axios.get(`${BASE_URL}/groups/${GROUP_ID}/instances`, { headers });
+      const instances = eventsRes.data || [];
+      if (instances.length > 0) {
+        const e = instances[0];
         nextEvent = {
-          name: e.title || 'Ивент',
+          name: e.name || 'Ивент',
           description: e.description || '',
-          date: starts ? starts.toLocaleDateString('ru-RU') : '',
-          time: starts ? starts.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }) : '',
+          date: e.queueEnabled ? new Date(e.queueEnabled).toLocaleDateString('ru-RU', { timeZone: 'Europe/Moscow' }) : '',
+          time: e.queueEnabled ? new Date(e.queueEnabled).toLocaleTimeString('ru-RU', { timeZone: 'Europe/Moscow', hour: '2-digit', minute: '2-digit' }) : '',
+          world: e.world?.name || '–',
         };
-        console.log(`Next event: ${nextEvent.name} (${nextEvent.date} ${nextEvent.time})`);
       }
     } catch (e) {
-      if (e.response?.status === 404) {
-        console.log('No upcoming calendar event scheduled');
-      } else {
-        console.warn('Could not fetch next event:', e.response?.data || e.message);
-      }
+      console.warn('Could not fetch events:', e.message);
     }
 
-    // Галерея группы.
-    // Путь /groups/{id}/galleries/{galleryId}/images принимает только POST (добавление картинки модератором) —
-    // GET туда давал 405. Верный путь для чтения списка — БЕЗ /images на конце.
-    // Поле с URL картинки в ответе называется imageUrl, а не fileUrl.
     let gallery = [];
     try {
-      const galleries = group.galleries || [];
+      // Сначала получаем список галерей группы
+      const galleriesRes = await axios.get(`${BASE_URL}/groups/${GROUP_ID}/galleries`, { headers });
+      const galleries = galleriesRes.data || [];
+      console.log(`Found ${galleries.length} galleries`);
       if (galleries.length > 0) {
-        const target = galleries.find(g => g.name === GALLERY_NAME) || galleries[0];
-        const galleryId = target.id;
-        console.log(`Using gallery "${target.name}" (${galleryId})`);
+        const galleryId = galleries[0].id;
+        console.log('Gallery ID:', galleryId);
         const galleryRes = await axios.get(
-          `${BASE_URL}/groups/${GROUP_ID}/galleries/${galleryId}`,
-          { headers, params: { n: 20, approved: true } }
+          `${BASE_URL}/groups/${GROUP_ID}/galleries/${galleryId}/images`,
+          { headers, params: { n: 20 } }
         );
         gallery = (galleryRes.data || [])
-          .filter(i => i.imageUrl)
-          .map(i => i.imageUrl);
+          .filter(i => i.fileUrl)
+          .map(i => i.fileUrl);
         console.log(`Gallery: ${gallery.length} images`);
-      } else {
-        console.warn('У группы нет ни одной галереи (group.galleries пуст)');
       }
     } catch (e) {
-      console.warn('Could not fetch gallery:', e.response?.data || e.message);
+      console.warn('Could not fetch gallery:', e.message);
     }
 
     const data = { members, nextEvent, gallery, updated: new Date().toISOString() };

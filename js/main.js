@@ -109,7 +109,7 @@ async function loadVRChatData() {
         regularContainer.innerHTML = `
           <div class="event-card event-upcoming">
             <div class="event-body">
-              <p class="event-date">${formatDateMSK(e.startDateTime || e.date)}</p>
+              <p class="event-date">${e.date} · ${e.time} МСК</p>
               <h3 class="event-name">${e.name}</h3>
               ${e.description ? `<p class="event-desc">${e.description}</p>` : ''}
             </div>
