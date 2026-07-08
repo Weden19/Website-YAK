@@ -64,7 +64,7 @@ async function loadSpecialEvents() {
       const isUpcoming = r.status === 'upcoming';
       return `
         <div class="event-card ${isUpcoming ? 'event-upcoming' : ''}">
-          <div class="event-badge ${isUpcoming ? '' : 'event-badge-past'}">${isUpcoming ? '' : 'Прошёл'}</div>
+          <div class="event-badge ${isUpcoming ? '' : 'event-badge-past'}">${isUpcoming ? 'Скоро' : 'Прошёл'}</div>
           <div class="event-body">
             <p class="event-date">${r.date} · ${r.time} МСК</p>
             <h3 class="event-name">${r.name}</h3>
@@ -98,7 +98,6 @@ async function loadVRChatData() {
         const e = data.nextEvent;
         regularContainer.innerHTML = `
           <div class="event-card event-upcoming">
-            <div class="event-badge">Скоро</div>
             <div class="event-body">
               <p class="event-date">${e.date} · ${e.time}</p>
               <h3 class="event-name">${e.name}</h3>
