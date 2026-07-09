@@ -166,6 +166,7 @@ function initSlider(images) {
     img.src = url;
     img.alt = `Фото ${i + 1}`;
     img.loading = i < 2 ? 'eager' : 'lazy';
+    img.referrerPolicy = 'no-referrer';
     slide.appendChild(img);
     viewport.appendChild(slide);
 
