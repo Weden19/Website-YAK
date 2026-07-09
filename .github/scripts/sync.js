@@ -83,29 +83,30 @@ async function main() {
     const members = group.memberCount || 0;
     console.log(`Members: ${members}`);
 
-    // Ближайший ивент.
-    // /groups/{id}/instances — это то, что открыто ПРЯМО СЕЙЧАС, а не то, что запланировано.
-    // Если в момент запуска синка никто не хостит инстанс — massив пустой и nextEvent = null,
-    // это ожидаемо, не баг.
+    // Ближайший запланированный ивент группы.
+    // /groups/{id}/instances — это то, что открыто ПРЯМО СЕЙЧАС (активные сессии),
+    // а не расписание. Если в момент запуска никто не в мире — массив пустой,
+    // и nextEvent так и останется null навсегда. Нужен отдельный Calendar API.
     let nextEvent = null;
     try {
-      const eventsRes = await axios.get(`${BASE_URL}/groups/${GROUP_ID}/instances`, { headers });
-      const instances = eventsRes.data || [];
-      if (instances.length > 0) {
-        const e = instances[0];
+      const eventRes = await axios.get(`${BASE_URL}/calendar/${GROUP_ID}/next`, { headers });
+      const e = eventRes.data;
+      if (e) {
+        const starts = e.startsAt ? new Date(e.startsAt) : null;
         nextEvent = {
-          name: e.name || 'Ивент',
+          name: e.title || 'Ивент',
           description: e.description || '',
-          date: e.queueEnabled ? new Date(e.queueEnabled).toLocaleDateString('ru-RU', { timeZone: 'Europe/Moscow' }) : '',
-          time: e.queueEnabled ? new Date(e.queueEnabled).toLocaleTimeString('ru-RU', { timeZone: 'Europe/Moscow', hour: '2-digit', minute: '2-digit' }) : '',
-          world: e.world?.name || '–',
+          date: starts ? starts.toLocaleDateString('ru-RU', { timeZone: 'Europe/Moscow' }) : '',
+          time: starts ? starts.toLocaleTimeString('ru-RU', { timeZone: 'Europe/Moscow', hour: '2-digit', minute: '2-digit' }) : '',
         };
-        console.log(`Next event: ${nextEvent.name}`);
-      } else {
-        console.log('No active instances right now');
+        console.log(`Next event: ${nextEvent.name} (${nextEvent.date} ${nextEvent.time})`);
       }
     } catch (e) {
-      console.warn('Could not fetch events:', e.response?.data || e.message);
+      if (e.response?.status === 404) {
+        console.log('No upcoming calendar event scheduled');
+      } else {
+        console.warn('Could not fetch next event:', e.response?.data || e.message);
+      }
     }
 
     // Галерея группы.
