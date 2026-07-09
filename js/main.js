@@ -160,7 +160,7 @@ function initSlider(images) {
 
   images.forEach((url, i) => {
     const slide = document.createElement('div');
-    slide.className = 'slider-slide' + (i === 0 ? ' is-active' : '');
+    slide.className = 'slider-slide' + (i === 0 ? ' active' : '');
     slide.dataset.index = i;
     const img = document.createElement('img');
     img.src = url;
@@ -171,7 +171,7 @@ function initSlider(images) {
 
     if (dotsContainer) {
       const dot = document.createElement('button');
-      dot.className = 'slider-dot' + (i === 0 ? ' is-active' : '');
+      dot.className = 'slider-dot' + (i === 0 ? ' active' : '');
       dot.setAttribute('aria-label', `Слайд ${i + 1}`);
       dot.onclick = () => goToSlide(i);
       dotsContainer.appendChild(dot);
@@ -192,11 +192,11 @@ function goToSlide(index) {
   if (total === 0) return;
 
   const next = ((index % total) + total) % total;
-  slides[sliderState.current]?.classList.remove('is-active');
-  dots[sliderState.current]?.classList.remove('is-active');
+  slides[sliderState.current]?.classList.remove('active');
+  dots[sliderState.current]?.classList.remove('active');
   sliderState.current = next;
-  slides[next]?.classList.add('is-active');
-  dots[next]?.classList.add('is-active');
+  slides[next]?.classList.add('active');
+  dots[next]?.classList.add('active');
   if (currentEl) currentEl.textContent = next + 1;
 }
 
@@ -214,7 +214,7 @@ window.sliderPrev = function() { goToSlide(sliderState.current - 1); startAutoPl
 
 // ===== АВАТАРКИ =====
 function initAvatars() {
-  const colors = ['#7c6df0','#2a9d6c','#d85a30','#378add','#ba7517','#d4537e','#639922'];
+  const colors = ['#38bdf8','#2a9d6c','#d85a30','#378add','#ba7517','#d4537e','#639922'];
   document.querySelectorAll('.team-avatar[data-name]').forEach(el => {
     const name = el.getAttribute('data-name');
     if (!name) return;

@@ -82,6 +82,10 @@ async function main() {
     const members = group.memberCount || 0;
     console.log(`Members: ${members}`);
 
+    // Ближайший ивент.
+    // /groups/{id}/instances — это то, что открыто ПРЯМО СЕЙЧАС, а не то, что запланировано.
+    // Если в момент запуска синка никто не хостит инстанс — massив пустой и nextEvent = null,
+    // это ожидаемо, не баг.
     let nextEvent = null;
     try {
       const eventsRes = await axios.get(`${BASE_URL}/groups/${GROUP_ID}/instances`, { headers });
@@ -95,31 +99,38 @@ async function main() {
           time: e.queueEnabled ? new Date(e.queueEnabled).toLocaleTimeString('ru-RU', { timeZone: 'Europe/Moscow', hour: '2-digit', minute: '2-digit' }) : '',
           world: e.world?.name || '–',
         };
+        console.log(`Next event: ${nextEvent.name}`);
+      } else {
+        console.log('No active instances right now');
       }
     } catch (e) {
-      console.warn('Could not fetch events:', e.message);
+      console.warn('Could not fetch events:', e.response?.data || e.message);
     }
 
+    // Галерея группы.
+    // group.galleries УЖЕ приходит вместе с ответом /groups/{id} — отдельный запрос на список галерей не нужен.
+    // ВАЖНО: путь для чтения картинок — БЕЗ /images на конце.
+    // /groups/{id}/galleries/{galleryId}/images принимает только POST (модератор добавляет фото),
+    // GET туда возвращает 405 Method Not Allowed.
+    // Поле с URL картинки в ответе называется imageUrl, а не fileUrl.
     let gallery = [];
     try {
-      // Сначала получаем список галерей группы
-      const galleriesRes = await axios.get(`${BASE_URL}/groups/${GROUP_ID}/galleries`, { headers });
-      const galleries = galleriesRes.data || [];
+      const galleries = group.galleries || [];
       console.log(`Found ${galleries.length} galleries`);
       if (galleries.length > 0) {
         const galleryId = galleries[0].id;
-        console.log('Gallery ID:', galleryId);
+        console.log('Gallery ID:', galleryId, `(${galleries[0].name})`);
         const galleryRes = await axios.get(
-          `${BASE_URL}/groups/${GROUP_ID}/galleries/${galleryId}/images`,
-          { headers, params: { n: 20 } }
+          `${BASE_URL}/groups/${GROUP_ID}/galleries/${galleryId}`,
+          { headers, params: { n: 20, approved: true } }
         );
         gallery = (galleryRes.data || [])
-          .filter(i => i.fileUrl)
-          .map(i => i.fileUrl);
+          .filter(i => i.imageUrl)
+          .map(i => i.imageUrl);
         console.log(`Gallery: ${gallery.length} images`);
       }
     } catch (e) {
-      console.warn('Could not fetch gallery:', e.message);
+      console.warn('Could not fetch gallery:', e.response?.data || e.message);
     }
 
     const data = { members, nextEvent, gallery, updated: new Date().toISOString() };
