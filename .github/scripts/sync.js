@@ -141,6 +141,8 @@ async function main() {
       }
     } catch (e) {
       console.warn('Could not fetch gallery:', e.message);
+      console.warn('Status:', e.response?.status);
+      console.warn('Response:', JSON.stringify(e.response?.data).substring(0, 300));
     }
 
     const data = { members, nextEvent, gallery, updated: new Date().toISOString() };
