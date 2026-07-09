@@ -3,7 +3,6 @@ const fs = require('fs');
 const path = require('path');
 
 const GROUP_ID = 'grp_629eb128-47c7-40c5-848b-c0b8cb8e8a7a';
-const GALLERY_NAME = 'Фотографии группы'; // ← поменяй на ТОЧНОЕ название нужной галереи из VRChat (регистр важен)
 const BASE_URL = 'https://api.vrchat.cloud/api/1';
 const DATA_FILE = path.join(__dirname, '../../data/vrchat.json');
 const UA = 'YakovlevAcademy/1.0.0 (bot; +discord.gg/yakovlev-academy)';
@@ -83,71 +82,44 @@ async function main() {
     const members = group.memberCount || 0;
     console.log(`Members: ${members}`);
 
-    // Ближайший запланированный ивент группы.
-    // /groups/{id}/instances — это то, что открыто ПРЯМО СЕЙЧАС (активные сессии),
-    // а не расписание. Если в момент запуска никто не в мире — массив пустой,
-    // и nextEvent так и останется null навсегда. Нужен отдельный Calendar API.
     let nextEvent = null;
     try {
-      const eventRes = await axios.get(`${BASE_URL}/calendar/${GROUP_ID}/next`, { headers });
-      const e = eventRes.data;
-      if (e) {
-        const starts = e.startsAt ? new Date(e.startsAt) : null;
+      const eventsRes = await axios.get(`${BASE_URL}/groups/${GROUP_ID}/instances`, { headers });
+      const instances = eventsRes.data || [];
+      if (instances.length > 0) {
+        const e = instances[0];
         nextEvent = {
-          name: e.title || 'Ивент',
+          name: e.name || 'Ивент',
           description: e.description || '',
-          date: starts ? starts.toLocaleDateString('ru-RU', { timeZone: 'Europe/Moscow' }) : '',
-          time: starts ? starts.toLocaleTimeString('ru-RU', { timeZone: 'Europe/Moscow', hour: '2-digit', minute: '2-digit' }) : '',
+          date: e.queueEnabled ? new Date(e.queueEnabled).toLocaleDateString('ru-RU', { timeZone: 'Europe/Moscow' }) : '',
+          time: e.queueEnabled ? new Date(e.queueEnabled).toLocaleTimeString('ru-RU', { timeZone: 'Europe/Moscow', hour: '2-digit', minute: '2-digit' }) : '',
+          world: e.world?.name || '–',
         };
-        console.log(`Next event: ${nextEvent.name} (${nextEvent.date} ${nextEvent.time})`);
       }
     } catch (e) {
-      if (e.response?.status === 404) {
-        console.log('No upcoming calendar event scheduled');
-      } else {
-        console.warn('Could not fetch next event:', e.response?.data || e.message);
-      }
+      console.warn('Could not fetch events:', e.message);
     }
 
-    // Галерея группы.
-    // group.galleries УЖЕ приходит вместе с ответом /groups/{id} — отдельный запрос на список галерей не нужен.
-    // ВАЖНО: путь для чтения картинок — БЕЗ /images на конце.
-    // /groups/{id}/galleries/{galleryId}/images принимает только POST (модератор добавляет фото),
-    // GET туда возвращает 405 Method Not Allowed.
-    // Поле с URL картинки в ответе называется imageUrl, а не fileUrl.
     let gallery = [];
     try {
-      const galleries = group.galleries || [];
-      console.log(`Found ${galleries.length} galleries:`, galleries.map(g => g.name).join(', '));
+      // Сначала получаем список галерей группы
+      const galleriesRes = await axios.get(`${BASE_URL}/groups/${GROUP_ID}/galleries`, { headers });
+      const galleries = galleriesRes.data || [];
+      console.log(`Found ${galleries.length} galleries`);
       if (galleries.length > 0) {
-        const target = galleries.find(g => g.name === GALLERY_NAME) || galleries[0];
-        const galleryId = target.id;
-        console.log('Using gallery:', galleryId, `(${target.name})`);
+        const galleryId = galleries[0].id;
+        console.log('Gallery ID:', galleryId);
         const galleryRes = await axios.get(
-          `${BASE_URL}/groups/${GROUP_ID}/galleries/${galleryId}`,
-          { headers, params: { n: 20, approved: true } }
+          `${BASE_URL}/groups/${GROUP_ID}/galleries/${galleryId}/images`,
+          { headers, params: { n: 20 } }
         );
         gallery = (galleryRes.data || [])
-          .filter(i => i.imageUrl)
-          .map(i => i.imageUrl);
-        console.log(`Gallery (approved only): ${gallery.length} images`);
-
-        // Если approved-фильтр дал 0 — пробуем без него (вдруг фото не промодерированы,
-        // но группа их всё равно всем показывает)
-        if (gallery.length === 0) {
-          const fallbackRes = await axios.get(
-            `${BASE_URL}/groups/${GROUP_ID}/galleries/${galleryId}`,
-            { headers, params: { n: 20 } }
-          );
-          console.log('Raw response without approved filter:', JSON.stringify(fallbackRes.data).slice(0, 500));
-          gallery = (fallbackRes.data || [])
-            .filter(i => i.imageUrl)
-            .map(i => i.imageUrl);
-          console.log(`Gallery (no filter): ${gallery.length} images`);
-        }
+          .filter(i => i.fileUrl)
+          .map(i => i.fileUrl);
+        console.log(`Gallery: ${gallery.length} images`);
       }
     } catch (e) {
-      console.warn('Could not fetch gallery:', e.response?.data || e.message);
+      console.warn('Could not fetch gallery:', e.message);
     }
 
     const data = { members, nextEvent, gallery, updated: new Date().toISOString() };
