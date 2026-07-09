@@ -116,22 +116,30 @@ async function main() {
     let gallery = [];
     try {
       const galleries = group.galleries || [];
+
       if (galleries.length > 0) {
-        const galleryId = galleries[0].id;
-        console.log(`Using gallery "${galleries[0].name}" (${galleryId})`);
-        const target = galleries.find(g => g.name === GALLERY_NAME) || galleries[0];
-        const galleryId = target.id;
-        console.log(`Using gallery "${target.name}" (${galleryId})`);
-        const galleryRes = await axios.get(
-          `${BASE_URL}/groups/${GROUP_ID}/galleries/${galleryId}`,
-          { headers, params: { n: 20, approved: true } }
-        );
-        gallery = (galleryRes.data || [])
-          .filter(i => i.imageUrl)
-          .map(i => i.imageUrl);
-        console.log(`Gallery: ${gallery.length} images`);
+          const target = galleries.find(g => g.name === GALLERY_NAME) || galleries[0];
+
+          console.log(`Using gallery "${target.name}" (${target.id})`);
+
+         const galleryRes = await axios.get(
+              `${BASE_URL}/groups/${GROUP_ID}/galleries/${target.id}`,
+              {
+                  headers,
+                params: {
+                      n: 20,
+                     approved: true
+                  }
+              }
+          );
+
+          gallery = (galleryRes.data || [])
+              .filter(i => i.imageUrl)
+             .map(i => i.imageUrl);
+
+         console.log(`Gallery: ${gallery.length} images`);
       } else {
-        console.warn('У группы нет ни одной галереи (group.galleries пуст)');
+         console.warn('У группы нет ни одной галереи (group.galleries пуст)');
       }
     } catch (e) {
       console.warn('Could not fetch gallery:', e.response?.data || e.message);
