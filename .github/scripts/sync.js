@@ -64,6 +64,7 @@ async function main() {
         );
         jar.add(tfaRes.headers['set-cookie']);
         console.log('2FA passed');
+        console.log('Cookies after 2FA:', jar.toString().substring(0, 100));
       } else if (requiresTwoFactor.includes('emailOtp')) {
         throw new Error('Email OTP не поддерживается. Переключи на TOTP.');
       }
@@ -111,7 +112,7 @@ async function main() {
         console.log(`Using gallery: ${galleryId} (${photoGallery.name})`);
         const galleryRes = await axios.get(
           `${BASE_URL}/groups/${GROUP_ID}/galleries/${galleryId}/images`,
-          { headers, params: { n: 20, approved: true } }
+          { headers, params: { n: 20 } }
         );
         const images = (galleryRes.data || []).filter(i => i.fileUrl);
         console.log(`Gallery (approved only): ${images.length} images`);
