@@ -153,16 +153,13 @@ function initSlider(images) {
     viewport.innerHTML = '';
     if (dotsContainer) dotsContainer.innerHTML = '';
 
-    // Прокси для обхода CORS/Hotlink защиты CDN VRChat
-    const proxyUrl = 'https://corsproxy.io/?';
-
     images.forEach((url, i) => {
         const slide = document.createElement('div');
         slide.className = 'slider-slide' + (i === 0 ? ' active' : '');
         slide.dataset.index = i;
 
         const img = document.createElement('img');
-        img.src = proxyUrl + encodeURIComponent(url);
+        img.src = url;
         img.alt = `Фото ${i + 1}`;
         img.loading = i < 2 ? 'eager' : 'lazy';
         img.referrerPolicy = 'no-referrer';
