@@ -1,213 +1,216 @@
 // ===== КОНФИГ =====
 const SHEET_ID = '1x6L5vMbK3nu68oUATruuKS3aPyBobaneE8m9p6r4vvE';
-
 function sheetUrl(sheetName) {
-  return `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${sheetName}`;
+    return `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${sheetName}`;
 }
-
 function parseSheet(raw) {
-  const json = JSON.parse(raw.substring(47).slice(0, -2));
-  const cols = json.table.cols.map(c => c.label.trim());
-  return json.table.rows
-    .filter(row => row.c && row.c.some(cell => cell && cell.v !== null))
-    .map(row => {
-      const obj = {};
-      row.c.forEach((cell, i) => {
-        if (!cell || cell.v === null || cell.v === undefined) {
-          obj[cols[i]] = '';
-          return;
-        }
-        if (cell.f) {
-          obj[cols[i]] = cell.f;
-        } else if (typeof cell.v === 'string') {
-          obj[cols[i]] = cell.v;
-        } else {
-          obj[cols[i]] = String(cell.v);
-        }
-      });
-      return obj;
-    });
+    const json = JSON.parse(raw.substring(47).slice(0, -2));
+    const cols = json.table.cols.map(c => c.label.trim());
+    return json.table.rows
+        .filter(row => row.c && row.c.some(cell => cell && cell.v !== null))
+        .map(row => {
+            const obj = {};
+            row.c.forEach((cell, i) => {
+                if (!cell || cell.v === null || cell.v === undefined) {
+                    obj[cols[i]] = '';
+                    return;
+                }
+                if (cell.f) {
+                    obj[cols[i]] = cell.f;
+                } else if (typeof cell.v === 'string') {
+                    obj[cols[i]] = cell.v;
+                } else {
+                    obj[cols[i]] = String(cell.v);
+                }
+            });
+            return obj;
+        });
 }
-
 async function fetchSheet(sheetName) {
-  const res = await fetch(sheetUrl(sheetName));
-  const text = await res.text();
-  return parseSheet(text);
+    const res = await fetch(sheetUrl(sheetName));
+    const text = await res.text();
+    return parseSheet(text);
 }
 
 // ===== ФОРМАТИРОВАНИЕ ДАТЫ В МСК =====
 function formatDateMSK(isoString) {
-  if (!isoString) return '';
-  try {
-    const date = new Date(isoString);
-    const dateStr = date.toLocaleDateString('ru-RU', { timeZone: 'Europe/Moscow', day: '2-digit', month: '2-digit', year: 'numeric' });
-    const timeStr = date.toLocaleTimeString('ru-RU', { timeZone: 'Europe/Moscow', hour: '2-digit', minute: '2-digit' });
-    return `${dateStr} · ${timeStr} МСК`;
-  } catch (e) {
-    return isoString;
-  }
+    if (!isoString) return '';
+    try {
+        const date = new Date(isoString);
+        const dateStr = date.toLocaleDateString('ru-RU', { timeZone: 'Europe/Moscow', day: '2-digit', month: '2-digit', year: 'numeric' });
+        const timeStr = date.toLocaleTimeString('ru-RU', { timeZone: 'Europe/Moscow', hour: '2-digit', minute: '2-digit' });
+        return `${dateStr} · ${timeStr} МСК`;
+    } catch (e) {
+        return isoString;
+    }
 }
 
 // ===== СТАТИСТИКА ИЗ SHEETS =====
 async function loadStats() {
-  try {
-    const rows = await fetchSheet('stats');
-    rows.forEach(row => {
-      const el = document.getElementById('stat-' + row.key);
-      if (el && row.value) el.textContent = row.value;
-    });
-  } catch (e) {
-    console.warn('Не удалось загрузить stats:', e);
-  }
+    try {
+        const rows = await fetchSheet('stats');
+        rows.forEach(row => {
+            const el = document.getElementById('stat-' + row.key);
+            if (el && row.value) el.textContent = row.value;
+        });
+    } catch (e) {
+        console.warn('Не удалось загрузить stats:', e);
+    }
 }
 
 // ===== СПЕЦИАЛЬНЫЕ ИВЕНТЫ ИЗ SHEETS =====
 async function loadSpecialEvents() {
-  const container = document.getElementById('specialEvents');
-  try {
-    const rows = await fetchSheet('events');
-    if (!rows.length) {
-      container.innerHTML = '<p class="events-empty">Специальных ивентов пока нет</p>';
-      return;
+    const container = document.getElementById('specialEvents');
+    try {
+        const rows = await fetchSheet('events');
+        if (!rows.length) {
+            container.innerHTML = '<p class="events-empty">Специальных ивентов пока нет</p>';
+            return;
+        }
+        container.innerHTML = rows.map(r => {
+            const isUpcoming = r.status === 'upcoming';
+            return `
+            <div class="event-card ${isUpcoming ? 'event-upcoming' : ''}">
+                <div class="event-badge ${isUpcoming ? '' : 'event-badge-past'}">${isUpcoming ? 'Скоро' : 'Прошёл'}</div>
+                <div class="event-body">
+                    <p class="event-date">${r.date} · ${r.time} МСК</p>
+                    <h3 class="event-name">${r.name}</h3>
+                    <p class="event-desc">${r.description}</p>
+                </div>
+                <div class="event-world">Мир: <span>${r.world || 'Загадка'}</span></div>
+            </div>
+            `;
+        }).join('');
+    } catch (e) {
+        if (container) container.innerHTML = '<p class="events-empty">Ошибка загрузки</p>';
+        console.warn(e);
     }
-    container.innerHTML = rows.map(r => {
-      const isUpcoming = r.status === 'upcoming';
-      return `
-        <div class="event-card ${isUpcoming ? 'event-upcoming' : ''}">
-          <div class="event-badge ${isUpcoming ? '' : 'event-badge-past'}">${isUpcoming ? 'Скоро' : 'Прошёл'}</div>
-          <div class="event-body">
-            <p class="event-date">${r.date} · ${r.time} МСК</p>
-            <h3 class="event-name">${r.name}</h3>
-            <p class="event-desc">${r.description}</p>
-          </div>
-          <div class="event-world">Мир: <span>${r.world || 'Загадка'}</span></div>
-        </div>
-      `;
-    }).join('');
-  } catch (e) {
-    if (container) container.innerHTML = '<p class="events-empty">Ошибка загрузки</p>';
-    console.warn(e);
-  }
 }
 
 // ===== ДАННЫЕ ИЗ VRCHAT.JSON =====
 async function loadVRChatData() {
-  try {
-    const res = await fetch('data/vrchat.json');
-    if (!res.ok) throw new Error('Network error');
-    const data = await res.json();
+    try {
+        const res = await fetch('data/vrchat.json');
+        if (!res.ok) throw new Error('Network error');
+        const data = await res.json();
 
-    // Участники
-    const membersEl = document.getElementById('stat-members');
-    if (membersEl && data.members) membersEl.textContent = data.members;
+        // Участники
+        const membersEl = document.getElementById('stat-members');
+        if (membersEl && data.members) membersEl.textContent = data.members;
 
-    // Ближайший ивент
-    const regularContainer = document.getElementById('regularEvents');
-    if (regularContainer) {
-      if (data.nextEvent) {
-        const e = data.nextEvent;
-        regularContainer.innerHTML = `
-          <div class="event-card event-upcoming">
-            <div class="event-body">
-              <p class="event-date">${e.date} · ${e.time} МСК</p>
-              <h3 class="event-name">${e.name}</h3>
-              ${e.description ? `<p class="event-desc">${e.description}</p>` : ''}
-            </div>
-            <div class="event-world">Мир: <span>${e.world || 'Загадка'}</span></div>
-          </div>
-        `;
-      } else {
-        regularContainer.innerHTML = '<p class="events-empty">Пока нет запланированных ивентов</p>';
-      }
+        // Ближайший ивент
+        const regularContainer = document.getElementById('regularEvents');
+        if (regularContainer) {
+            if (data.nextEvent) {
+                const e = data.nextEvent;
+                regularContainer.innerHTML = `
+                <div class="event-card event-upcoming">
+                    <div class="event-body">
+                        <p class="event-date">${e.date} · ${e.time} МСК</p>
+                        <h3 class="event-name">${e.name}</h3>
+                        ${e.description ? `<p class="event-desc">${e.description}</p>` : ''}
+                    </div>
+                    <div class="event-world">Мир: <span>${e.world || 'Загадка'}</span></div>
+                </div>
+                `;
+            } else {
+                regularContainer.innerHTML = '<p class="events-empty">Пока нет запланированных ивентов</p>';
+            }
+        }
+
+        // Галерея
+        if (data.gallery && data.gallery.length > 0) {
+            initSlider(data.gallery);
+        } else {
+            const viewport = document.getElementById('sliderViewport');
+            if (viewport) viewport.innerHTML = '<div class="slider-placeholder">Фото появятся после первого ивента</div>';
+        }
+    } catch (err) {
+        console.warn('Не удалось загрузить vrchat.json:', err);
+        const regularContainer = document.getElementById('regularEvents');
+        if (regularContainer) regularContainer.innerHTML = '<p class="events-empty">Данные недоступны</p>';
     }
-
-    // Галерея
-    if (data.gallery && data.gallery.length > 0) {
-      initSlider(data.gallery);
-    } else {
-      const viewport = document.getElementById('sliderViewport');
-      if (viewport) viewport.innerHTML = '<div class="slider-placeholder">Фото появятся после первого ивента</div>';
-    }
-
-  } catch (err) {
-    console.warn('Не удалось загрузить vrchat.json:', err);
-    const regularContainer = document.getElementById('regularEvents');
-    if (regularContainer) regularContainer.innerHTML = '<p class="events-empty">Данные недоступны</p>';
-  }
 }
 
 // ===== СЛАЙДЕР =====
 const sliderState = {
-  images: [],
-  current: 0,
-  timer: null,
-  SLIDE_DURATION: 5000,
+    images: [],
+    current: 0,
+    timer: null,
+    SLIDE_DURATION: 5000,
 };
 
 function initSlider(images) {
-  const viewport = document.getElementById('sliderViewport');
-  const dotsContainer = document.getElementById('sliderDots');
-  const totalEl = document.getElementById('sliderTotal');
-  const currentEl = document.getElementById('sliderCurrent');
+    const viewport = document.getElementById('sliderViewport');
+    const dotsContainer = document.getElementById('sliderDots');
+    const totalEl = document.getElementById('sliderTotal');
+    const currentEl = document.getElementById('sliderCurrent');
 
-  if (!viewport || !images || images.length === 0) return;
+    if (!viewport || !images || images.length === 0) return;
 
-  sliderState.images = images;
-  sliderState.current = 0;
+    sliderState.images = images;
+    sliderState.current = 0;
+    viewport.innerHTML = '';
+    if (dotsContainer) dotsContainer.innerHTML = '';
 
-  viewport.innerHTML = '';
-  if (dotsContainer) dotsContainer.innerHTML = '';
+    // Прокси для обхода CORS/Hotlink защиты CDN VRChat
+    const proxyUrl = 'https://corsproxy.io/?';
 
-  images.forEach((url, i) => {
-    const slide = document.createElement('div');
-    slide.className = 'slider-slide' + (i === 0 ? ' active' : '');
-    slide.dataset.index = i;
-    const img = document.createElement('img');
-    img.src = url;
-    img.alt = `Фото ${i + 1}`;
-    img.loading = i < 2 ? 'eager' : 'lazy';
-    img.referrerPolicy = 'no-referrer';
-    slide.appendChild(img);
-    viewport.appendChild(slide);
+    images.forEach((url, i) => {
+        const slide = document.createElement('div');
+        slide.className = 'slider-slide' + (i === 0 ? ' active' : '');
+        slide.dataset.index = i;
 
-    if (dotsContainer) {
-      const dot = document.createElement('button');
-      dot.className = 'slider-dot' + (i === 0 ? ' active' : '');
-      dot.setAttribute('aria-label', `Слайд ${i + 1}`);
-      dot.onclick = () => goToSlide(i);
-      dotsContainer.appendChild(dot);
-    }
-  });
+        const img = document.createElement('img');
+        img.src = proxyUrl + encodeURIComponent(url);
+        img.alt = `Фото ${i + 1}`;
+        img.loading = i < 2 ? 'eager' : 'lazy';
+        img.referrerPolicy = 'no-referrer';
+        
+        slide.appendChild(img);
+        viewport.appendChild(slide);
 
-  if (totalEl) totalEl.textContent = images.length;
-  if (currentEl) currentEl.textContent = 1;
+        if (dotsContainer) {
+            const dot = document.createElement('button');
+            dot.className = 'slider-dot' + (i === 0 ? ' active' : '');
+            dot.setAttribute('aria-label', `Слайд ${i + 1}`);
+            dot.onclick = () => goToSlide(i);
+            dotsContainer.appendChild(dot);
+        }
+    });
 
-  startAutoPlay();
+    if (totalEl) totalEl.textContent = images.length;
+    if (currentEl) currentEl.textContent = 1;
+    startAutoPlay();
 }
 
 function goToSlide(index) {
-  const slides = document.querySelectorAll('.slider-slide');
-  const dots = document.querySelectorAll('.slider-dot');
-  const currentEl = document.getElementById('sliderCurrent');
-  const total = sliderState.images.length;
-  if (total === 0) return;
+    const slides = document.querySelectorAll('.slider-slide');
+    const dots = document.querySelectorAll('.slider-dot');
+    const currentEl = document.getElementById('sliderCurrent');
+    const total = sliderState.images.length;
+    if (total === 0) return;
 
-  const next = ((index % total) + total) % total;
-  slides[sliderState.current]?.classList.remove('active');
-  dots[sliderState.current]?.classList.remove('active');
-  sliderState.current = next;
-  slides[next]?.classList.add('active');
-  dots[next]?.classList.add('active');
-  if (currentEl) currentEl.textContent = next + 1;
+    const next = ((index % total) + total) % total;
+
+    slides[sliderState.current]?.classList.remove('active');
+    dots[sliderState.current]?.classList.remove('active');
+
+    sliderState.current = next;
+
+    slides[next]?.classList.add('active');
+    dots[next]?.classList.add('active');
+
+    if (currentEl) currentEl.textContent = next + 1;
 }
 
 function startAutoPlay() {
-  stopAutoPlay();
-  sliderState.timer = setInterval(() => goToSlide(sliderState.current + 1), sliderState.SLIDE_DURATION);
+    stopAutoPlay();
+    sliderState.timer = setInterval(() => goToSlide(sliderState.current + 1), sliderState.SLIDE_DURATION);
 }
 
 function stopAutoPlay() {
-  if (sliderState.timer) { clearInterval(sliderState.timer); sliderState.timer = null; }
+    if (sliderState.timer) { clearInterval(sliderState.timer); sliderState.timer = null; }
 }
 
 window.sliderNext = function() { goToSlide(sliderState.current + 1); startAutoPlay(); };
@@ -215,43 +218,43 @@ window.sliderPrev = function() { goToSlide(sliderState.current - 1); startAutoPl
 
 // ===== АВАТАРКИ =====
 function initAvatars() {
-  const colors = ['#38bdf8','#2a9d6c','#d85a30','#378add','#ba7517','#d4537e','#639922'];
-  document.querySelectorAll('.team-avatar[data-name]').forEach(el => {
-    const name = el.getAttribute('data-name');
-    if (!name) return;
-    const letter = [...name][0].toUpperCase();
-    const hash = [...name].reduce((a, c) => a + c.charCodeAt(0), 0);
-    const bg = colors[hash % colors.length];
-    el.textContent = letter;
-    el.style.background = bg + '33';
-    el.style.color = bg;
-  });
+    const colors = ['#38bdf8','#2a9d6c','#d85a30','#378add','#ba7517','#d4537e','#639922'];
+    document.querySelectorAll('.team-avatar[data-name]').forEach(el => {
+        const name = el.getAttribute('data-name');
+        if (!name) return;
+        const letter = [...name][0].toUpperCase();
+        const hash = [...name].reduce((a, c) => a + c.charCodeAt(0), 0);
+        const bg = colors[hash % colors.length];
+        el.textContent = letter;
+        el.style.background = bg + '33';
+        el.style.color = bg;
+    });
 }
 
 // ===== МОБИЛЬНОЕ МЕНЮ =====
 window.toggleMenu = function() {
-  document.getElementById('mobileNav')?.classList.toggle('open');
+    document.getElementById('mobileNav')?.classList.toggle('open');
 };
 window.closeMenu = function() {
-  document.getElementById('mobileNav')?.classList.remove('open');
+    document.getElementById('mobileNav')?.classList.remove('open');
 };
 
 // ===== ИНИЦИАЛИЗАЦИЯ =====
 document.addEventListener('DOMContentLoaded', () => {
-  initAvatars();
-  loadStats();
-  loadVRChatData();
-  loadSpecialEvents();
+    initAvatars();
+    loadStats();
+    loadVRChatData();
+    loadSpecialEvents();
 
-  const slider = document.querySelector('.slider');
-  if (slider) {
-    slider.addEventListener('mouseenter', stopAutoPlay);
-    slider.addEventListener('mouseleave', startAutoPlay);
-  }
+    const slider = document.querySelector('.slider');
+    if (slider) {
+        slider.addEventListener('mouseenter', stopAutoPlay);
+        slider.addEventListener('mouseleave', startAutoPlay);
+    }
 
-  document.addEventListener('keydown', (e) => {
-    if (!sliderState.images.length) return;
-    if (e.key === 'ArrowLeft') window.sliderPrev();
-    if (e.key === 'ArrowRight') window.sliderNext();
-  });
+    document.addEventListener('keydown', (e) => {
+        if (!sliderState.images.length) return;
+        if (e.key === 'ArrowLeft') window.sliderPrev();
+        if (e.key === 'ArrowRight') window.sliderNext();
+    });
 });

@@ -93,8 +93,8 @@ async function main() {
                 nextEvent = {
                     name: e.title || 'Ивент',
                     description: e.description || '',
-                    date: starts ? starts.toLocaleDateString('ru-RU') : '',
-                    time: starts ? starts.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }) : '',
+                    date: starts ? starts.toLocaleDateString('ru-RU', { timeZone: 'Europe/Moscow' }) : '',
+                    time: starts ? starts.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Moscow' }) : '',
                 };
                 console.log(`Next event: ${nextEvent.name} (${nextEvent.date} ${nextEvent.time})`);
             }
