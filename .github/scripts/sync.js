@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 
 const GROUP_ID = 'grp_629eb128-47c7-40c5-848b-c0b8cb8e8a7a';
-const GALLERY_NAME = 'Фотографии группы';
+const GALLERY_NAME = 'Фотографии группы'; // ← поменяй на ТОЧНОЕ название нужной галереи из VRChat (регистр важен)
 const BASE_URL = 'https://api.vrchat.cloud/api/1';
 const DATA_FILE = path.join(__dirname, '../../data/vrchat.json');
 const UA = 'YakovlevAcademy/1.0.0 (bot; +discord.gg/yakovlev-academy)';
