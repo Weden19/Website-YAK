@@ -3,6 +3,7 @@ const fs = require('fs');
 const path = require('path');
 
 const GROUP_ID = 'grp_629eb128-47c7-40c5-848b-c0b8cb8e8a7a';
+const GALLERY_NAME = 'Фотографии группы';
 const BASE_URL = 'https://api.vrchat.cloud/api/1';
 const DATA_FILE = path.join(__dirname, '../../data/vrchat.json');
 const UA = 'YakovlevAcademy/1.0.0 (bot; +discord.gg/yakovlev-academy)';
@@ -64,7 +65,6 @@ async function main() {
         );
         jar.add(tfaRes.headers['set-cookie']);
         console.log('2FA passed');
-        console.log('Cookies after 2FA:', jar.toString().substring(0, 100));
       } else if (requiresTwoFactor.includes('emailOtp')) {
         throw new Error('Email OTP не поддерживается. Переключи на TOTP.');
       }
@@ -83,66 +83,58 @@ async function main() {
     const members = group.memberCount || 0;
     console.log(`Members: ${members}`);
 
+    // Ближайший запланированный ивент группы.
+    // /groups/{id}/instances показывает только то, что открыто ПРЯМО СЕЙЧАС (активные инстансы),
+    // поэтому раньше nextEvent всегда оставался null, если в момент запуска никто не сидел в мире.
+    // Правильный источник запланированных ивентов — отдельный Calendar API.
     let nextEvent = null;
     try {
-      const eventsRes = await axios.get(`${BASE_URL}/groups/${GROUP_ID}/instances`, { headers });
-      const instances = eventsRes.data || [];
-      if (instances.length > 0) {
-        const e = instances[0];
+      const eventRes = await axios.get(`${BASE_URL}/calendar/${GROUP_ID}/next`, { headers });
+      const e = eventRes.data;
+      if (e) {
+        const starts = e.startsAt ? new Date(e.startsAt) : null;
         nextEvent = {
-          name: e.name || 'Ивент',
+          name: e.title || 'Ивент',
           description: e.description || '',
-          date: e.queueEnabled ? new Date(e.queueEnabled).toLocaleDateString('ru-RU', { timeZone: 'Europe/Moscow' }) : '',
-          time: e.queueEnabled ? new Date(e.queueEnabled).toLocaleTimeString('ru-RU', { timeZone: 'Europe/Moscow', hour: '2-digit', minute: '2-digit' }) : '',
-          world: e.world?.name || '–',
+          date: starts ? starts.toLocaleDateString('ru-RU') : '',
+          time: starts ? starts.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }) : '',
         };
+        console.log(`Next event: ${nextEvent.name} (${nextEvent.date} ${nextEvent.time})`);
       }
     } catch (e) {
-      console.warn('Could not fetch events:', e.message);
+      if (e.response?.status === 404) {
+        console.log('No upcoming calendar event scheduled');
+      } else {
+        console.warn('Could not fetch next event:', e.response?.data || e.message);
+      }
     }
 
+    // Галерея группы.
+    // Путь /groups/{id}/galleries/{galleryId}/images принимает только POST (добавление картинки модератором) —
+    // GET туда давал 405. Верный путь для чтения списка — БЕЗ /images на конце.
+    // Поле с URL картинки в ответе называется imageUrl, а не fileUrl.
     let gallery = [];
     try {
       const galleries = group.galleries || [];
-      console.log(`Found ${galleries.length} galleries in group data`);
-
-      const photoGallery = galleries.find(g => g.name && g.name.toLowerCase().includes('фото')) || galleries[galleries.length - 1];
-      if (photoGallery) {
-        const galleryId = photoGallery.id;
-        console.log(`Using gallery: ${galleryId} (${photoGallery.name})`);
+      if (galleries.length > 0) {
+        const galleryId = galleries[0].id;
+        console.log(`Using gallery "${galleries[0].name}" (${galleryId})`);
+        const target = galleries.find(g => g.name === GALLERY_NAME) || galleries[0];
+        const galleryId = target.id;
+        console.log(`Using gallery "${target.name}" (${galleryId})`);
         const galleryRes = await axios.get(
           `${BASE_URL}/groups/${GROUP_ID}/galleries/${galleryId}`,
-          { headers, params: { n: 20, offset: 0, approved: true } }
+          { headers, params: { n: 20, approved: true } }
         );
-        const images = (galleryRes.data || []).filter(i => i.fileUrl);
-        console.log(`Gallery (approved only): ${images.length} images`);
-
-        const galleryDir = path.join(__dirname, '../../data/gallery');
-        if (!fs.existsSync(galleryDir)) fs.mkdirSync(galleryDir, { recursive: true });
-        fs.readdirSync(galleryDir).forEach(f => fs.unlinkSync(path.join(galleryDir, f)));
-
-        for (let i = 0; i < images.length; i++) {
-          const img = images[i];
-          try {
-            const imgRes = await axios.get(img.fileUrl, {
-              headers,
-              responseType: 'arraybuffer',
-            });
-            const ext = imgRes.headers['content-type']?.includes('png') ? 'png' : 'jpg';
-            const filename = `photo_${String(i).padStart(2, '0')}.${ext}`;
-            fs.writeFileSync(path.join(galleryDir, filename), imgRes.data);
-            gallery.push(`/Website-YAK/data/gallery/${filename}`);
-            console.log(`Downloaded: ${filename}`);
-          } catch (e) {
-            console.warn(`Failed to download image ${i}:`, e.message);
-          }
-        }
-        console.log(`Gallery saved: ${gallery.length} images`);
+        gallery = (galleryRes.data || [])
+          .filter(i => i.imageUrl)
+          .map(i => i.imageUrl);
+        console.log(`Gallery: ${gallery.length} images`);
+      } else {
+        console.warn('У группы нет ни одной галереи (group.galleries пуст)');
       }
     } catch (e) {
-      console.warn('Could not fetch gallery:', e.message);
-      console.warn('Status:', e.response?.status);
-      console.warn('Response:', JSON.stringify(e.response?.data).substring(0, 300));
+      console.warn('Could not fetch gallery:', e.response?.data || e.message);
     }
 
     const data = { members, nextEvent, gallery, updated: new Date().toISOString() };
@@ -154,5 +146,3 @@ async function main() {
     process.exit(1);
   }
 }
-
-main();
