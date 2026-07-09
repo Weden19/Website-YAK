@@ -111,8 +111,8 @@ async function main() {
         const galleryId = photoGallery.id;
         console.log(`Using gallery: ${galleryId} (${photoGallery.name})`);
         const galleryRes = await axios.get(
-          `${BASE_URL}/groups/${GROUP_ID}/galleries/${galleryId}/images`,
-          { headers, params: { n: 20 } }
+          `${BASE_URL}/groups/${GROUP_ID}/galleries/${galleryId}`,
+          { headers, params: { n: 20, offset: 0, approved: true } }
         );
         const images = (galleryRes.data || []).filter(i => i.fileUrl);
         console.log(`Gallery (approved only): ${images.length} images`);
