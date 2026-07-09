@@ -102,11 +102,9 @@ async function main() {
 
     let gallery = [];
     try {
-      const galleriesRes = await axios.get(`${BASE_URL}/groups/${GROUP_ID}/galleries`, { headers });
-      const galleries = galleriesRes.data || [];
-      console.log(`Found ${galleries.length} galleries`);
+      const galleries = group.galleries || [];
+      console.log(`Found ${galleries.length} galleries in group data`);
 
-      // Берём галерею с фотографиями (не баннер/иконка)
       const photoGallery = galleries.find(g => g.name && g.name.toLowerCase().includes('фото')) || galleries[galleries.length - 1];
       if (photoGallery) {
         const galleryId = photoGallery.id;
@@ -118,11 +116,8 @@ async function main() {
         const images = (galleryRes.data || []).filter(i => i.fileUrl);
         console.log(`Gallery (approved only): ${images.length} images`);
 
-        // Скачиваем и сохраняем локально
         const galleryDir = path.join(__dirname, '../../data/gallery');
         if (!fs.existsSync(galleryDir)) fs.mkdirSync(galleryDir, { recursive: true });
-
-        // Удаляем старые файлы
         fs.readdirSync(galleryDir).forEach(f => fs.unlinkSync(path.join(galleryDir, f)));
 
         for (let i = 0; i < images.length; i++) {
