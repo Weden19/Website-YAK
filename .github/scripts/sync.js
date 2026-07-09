@@ -102,21 +102,46 @@ async function main() {
 
     let gallery = [];
     try {
-      // Сначала получаем список галерей группы
       const galleriesRes = await axios.get(`${BASE_URL}/groups/${GROUP_ID}/galleries`, { headers });
       const galleries = galleriesRes.data || [];
       console.log(`Found ${galleries.length} galleries`);
-      if (galleries.length > 0) {
-        const galleryId = galleries[0].id;
-        console.log('Gallery ID:', galleryId);
+
+      // Берём галерею с фотографиями (не баннер/иконка)
+      const photoGallery = galleries.find(g => g.name && g.name.toLowerCase().includes('фото')) || galleries[galleries.length - 1];
+      if (photoGallery) {
+        const galleryId = photoGallery.id;
+        console.log(`Using gallery: ${galleryId} (${photoGallery.name})`);
         const galleryRes = await axios.get(
           `${BASE_URL}/groups/${GROUP_ID}/galleries/${galleryId}/images`,
-          { headers, params: { n: 20 } }
+          { headers, params: { n: 20, approved: true } }
         );
-        gallery = (galleryRes.data || [])
-          .filter(i => i.fileUrl)
-          .map(i => i.fileUrl);
-        console.log(`Gallery: ${gallery.length} images`);
+        const images = (galleryRes.data || []).filter(i => i.fileUrl);
+        console.log(`Gallery (approved only): ${images.length} images`);
+
+        // Скачиваем и сохраняем локально
+        const galleryDir = path.join(__dirname, '../../data/gallery');
+        if (!fs.existsSync(galleryDir)) fs.mkdirSync(galleryDir, { recursive: true });
+
+        // Удаляем старые файлы
+        fs.readdirSync(galleryDir).forEach(f => fs.unlinkSync(path.join(galleryDir, f)));
+
+        for (let i = 0; i < images.length; i++) {
+          const img = images[i];
+          try {
+            const imgRes = await axios.get(img.fileUrl, {
+              headers,
+              responseType: 'arraybuffer',
+            });
+            const ext = imgRes.headers['content-type']?.includes('png') ? 'png' : 'jpg';
+            const filename = `photo_${String(i).padStart(2, '0')}.${ext}`;
+            fs.writeFileSync(path.join(galleryDir, filename), imgRes.data);
+            gallery.push(`/Website-YAK/data/gallery/${filename}`);
+            console.log(`Downloaded: ${filename}`);
+          } catch (e) {
+            console.warn(`Failed to download image ${i}:`, e.message);
+          }
+        }
+        console.log(`Gallery saved: ${gallery.length} images`);
       }
     } catch (e) {
       console.warn('Could not fetch gallery:', e.message);
