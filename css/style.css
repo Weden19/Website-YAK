@@ -655,7 +655,7 @@ body {
   pointer-events: none;
 }
 
-.slider-slide.is-active {
+.slider-slide.active {
   opacity: 1;
   pointer-events: auto;
   z-index: 2;
@@ -722,7 +722,7 @@ body {
   padding: 0;
 }
 
-.slider-dot.is-active { background: #fff; }
+.slider-dot.active { background: #fff; }
 
 .slider-counter {
   position: absolute;
