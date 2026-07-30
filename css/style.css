@@ -1000,8 +1000,8 @@ body {
   height: 280px;
   border-radius: var(--radius-lg);
   overflow: hidden;
-  background: var(--surface);
-  border: 1px solid var(--border);
+  background: transparent;
+  border: none;
   flex-shrink: 0;
 }
 
@@ -1104,8 +1104,8 @@ body {
   height: 280px;
   border-radius: var(--radius-lg);
   overflow: hidden;
-  background: var(--surface);
-  border: 1px solid var(--border);
+  background: transparent;
+  border: none;
   flex-shrink: 0;
 }
 
