@@ -188,6 +188,20 @@ body {
   margin-bottom: 36px;
 }
 
+.hero-panel {
+  display: inline-block;
+  background: rgba(14,14,16,0.55);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border-radius: var(--radius-lg);
+  padding: 28px 32px;
+  margin-bottom: 8px;
+}
+
+.hero-panel .hero-desc {
+  margin-bottom: 0;
+}
+
 /* ─── SECTIONS ─── */
 .section {
   padding: 80px 0;
