@@ -1157,3 +1157,29 @@ body {
     height: 240px;
   }
 }
+.site-header .container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+}
+
+.header-center-img {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    height: 42px;
+    width: auto;
+    pointer-events: none;
+}
+
+.logo,
+.nav,
+.burger {
+    position: relative;
+    z-index: 2;
+}
+
+.header-center-img {
+    z-index: 1;
+}
