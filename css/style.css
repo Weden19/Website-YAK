@@ -1172,11 +1172,8 @@ body {
 
 .hero-logo {
     display: block;
-    max-width: 500px; /* измените размер при необходимости */
+    max-width: 250px;
     width: 100%;
     height: auto;
     margin: 0 auto 48px;
-}git add .
-git commit -m "fix: events parsing and gallery fix"
-git pull --rebase origin main
-git push
+}
