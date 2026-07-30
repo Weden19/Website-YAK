@@ -1164,22 +1164,19 @@ body {
     position: relative;
 }
 
-.header-center-img {
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-    height: 42px;
-    width: auto;
-    pointer-events: none;
+.hero .container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
-.logo,
-.nav,
-.burger {
-    position: relative;
-    z-index: 2;
-}
-
-.header-center-img {
-    z-index: 1;
-}
+.hero-logo {
+    display: block;
+    max-width: 500px; /* измените размер при необходимости */
+    width: 100%;
+    height: auto;
+    margin: 0 auto 48px;
+}git add .
+git commit -m "fix: events parsing and gallery fix"
+git pull --rebase origin main
+git push
