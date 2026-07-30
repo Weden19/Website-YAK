@@ -1182,8 +1182,8 @@ body {
 
 .hero-logo {
     display: block;
-    width: min(100%, 320px);
-    max-width: 320px;
+    width: 80%;
+    max-width: 100%;
     height: auto;
     margin: 0 auto 48px;
     object-fit: contain;
