@@ -163,6 +163,11 @@ async function loadSpecialEvents() {
         }
         container.innerHTML = rows.map(r => {
             const state = getEventDisplayState(r);
+            const worldName = r.world || 'Загадка';
+            const worldHref = r.world_link || r.worldLink || r.world_url || r.worldUrl || r.link || r.url || '';
+            const worldHtml = worldHref
+                ? `<a href="${worldHref}" class="event-world-link" target="_blank" rel="noopener noreferrer">${worldName}</a>`
+                : `<span>${worldName}</span>`;
             return `
             <div class="event-card ${state.cardClass}">
                 <div class="event-badge ${state.badgeClass}">${state.label}</div>
@@ -171,7 +176,7 @@ async function loadSpecialEvents() {
                     <h3 class="event-name">${r.name}</h3>
                     <p class="event-desc">${r.description}</p>
                 </div>
-                <div class="event-world">Мир: <span>${r.world || 'Загадка'}</span></div>
+                <div class="event-world">Мир: ${worldHtml}</div>
             </div>
             `;
         }).join('');
