@@ -32,17 +32,111 @@ async function fetchSheet(sheetName) {
     return parseSheet(text);
 }
 
-// ===== ФОРМАТИРОВАНИЕ ДАТЫ В МСК =====
-function formatDateMSK(isoString) {
-    if (!isoString) return '';
-    try {
-        const date = new Date(isoString);
-        const dateStr = date.toLocaleDateString('ru-RU', { timeZone: 'Europe/Moscow', day: '2-digit', month: '2-digit', year: 'numeric' });
-        const timeStr = date.toLocaleTimeString('ru-RU', { timeZone: 'Europe/Moscow', hour: '2-digit', minute: '2-digit' });
-        return `${dateStr} · ${timeStr} МСК`;
-    } catch (e) {
-        return isoString;
+// ===== ФОРМАТИРОВАНИЕ ВРЕМЕНИ ИВЕНТОВ =====
+function parseEventDateTime(event) {
+    if (!event) return null;
+
+    const dateValue = event.date || event.datetime || event.start || '';
+    const timeValue = event.time || event.startTime || '';
+
+    if (typeof dateValue === 'string' && /^\d{2}\.\d{2}\.\d{4}$/.test(dateValue)) {
+        const [day, month, year] = dateValue.split('.').map(Number);
+        const [hours = 0, minutes = 0] = typeof timeValue === 'string' && timeValue.includes(':')
+            ? timeValue.split(':').map(Number)
+            : [0, 0];
+        const moscowOffsetMs = 3 * 60 * 60 * 1000;
+        return new Date(Date.UTC(year, month - 1, day, hours, minutes) - moscowOffsetMs);
     }
+
+    if (typeof dateValue === 'string' && dateValue.includes('T')) {
+        const parsed = new Date(dateValue);
+        if (!Number.isNaN(parsed.getTime())) return parsed;
+    }
+
+    if (typeof dateValue === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(dateValue)) {
+        const parsed = new Date(`${dateValue}T${timeValue || '00:00'}`);
+        if (!Number.isNaN(parsed.getTime())) return parsed;
+    }
+
+    return null;
+}
+
+function formatEventDateTime(event) {
+    const start = parseEventDateTime(event);
+    if (!start) {
+        return event?.date ? `${event.date}${event.time ? ` · ${event.time}` : ''}` : '';
+    }
+
+    const dateStr = start.toLocaleDateString('ru-RU', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+    });
+    const timeStr = start.toLocaleTimeString('ru-RU', {
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+
+    return `${dateStr} · ${timeStr}`;
+}
+
+function getStartOfWeek(date) {
+    const copy = new Date(date);
+    const day = copy.getDay() || 7;
+    copy.setHours(0, 0, 0, 0);
+    copy.setDate(copy.getDate() - day + 1);
+    return copy;
+}
+
+function isSameWeek(date, weekStart) {
+    const candidate = getStartOfWeek(date);
+    return candidate.getFullYear() === weekStart.getFullYear()
+        && candidate.getMonth() === weekStart.getMonth()
+        && candidate.getDate() === weekStart.getDate();
+}
+
+function getEventDisplayState(event, now = new Date()) {
+    const start = parseEventDateTime(event);
+    if (!start) {
+        return { label: 'Скоро', badgeClass: '', cardClass: 'event-upcoming' };
+    }
+
+    const startTime = new Date(start.getTime());
+    const endTime = new Date(startTime.getTime() + 60 * 60 * 1000);
+
+    if (now >= startTime && now <= endTime) {
+        return { label: 'Проходит', badgeClass: 'event-badge-active', cardClass: 'event-upcoming' };
+    }
+
+    if (now < startTime) {
+        return { label: 'Скоро', badgeClass: '', cardClass: 'event-upcoming' };
+    }
+
+    return { label: 'Прошёл', badgeClass: 'event-badge-past', cardClass: '' };
+}
+
+function getRegularEventsForDisplay(data, now = new Date()) {
+    const rawEvents = Array.isArray(data?.events)
+        ? data.events
+        : (data?.nextEvent ? [data.nextEvent] : []);
+
+    const parsedEvents = rawEvents
+        .map((event, index) => ({ ...event, _parsedDate: parseEventDateTime(event), _index: index }))
+        .filter(event => event._parsedDate)
+        .sort((a, b) => a._parsedDate - b._parsedDate);
+
+    if (!parsedEvents.length) return [];
+
+    const upcoming = parsedEvents.filter(event => event._parsedDate >= now);
+    const baseEvents = upcoming.length ? upcoming : parsedEvents;
+    const weekStart = getStartOfWeek(baseEvents[0]._parsedDate);
+    const sameWeekEvents = baseEvents.filter(event => isSameWeek(event._parsedDate, weekStart));
+
+    if (sameWeekEvents.length > 1) {
+        return sameWeekEvents;
+    }
+
+    return baseEvents.length ? [baseEvents[0]] : [];
 }
 
 // ===== СТАТИСТИКА ИЗ SHEETS =====
@@ -68,12 +162,12 @@ async function loadSpecialEvents() {
             return;
         }
         container.innerHTML = rows.map(r => {
-            const isUpcoming = r.status === 'upcoming';
+            const state = getEventDisplayState(r);
             return `
-            <div class="event-card ${isUpcoming ? 'event-upcoming' : ''}">
-                <div class="event-badge ${isUpcoming ? '' : 'event-badge-past'}">${isUpcoming ? 'Скоро' : 'Прошёл'}</div>
+            <div class="event-card ${state.cardClass}">
+                <div class="event-badge ${state.badgeClass}">${state.label}</div>
                 <div class="event-body">
-                    <p class="event-date">${r.date} · ${r.time} МСК</p>
+                    <p class="event-date">${formatEventDateTime(r)}</p>
                     <h3 class="event-name">${r.name}</h3>
                     <p class="event-desc">${r.description}</p>
                 </div>
@@ -98,21 +192,25 @@ async function loadVRChatData() {
         const membersEl = document.getElementById('stat-members');
         if (membersEl && data.members) membersEl.textContent = data.members;
 
-        // Ближайший ивент
+        // Ивенты по неделе или ближайший ивент
         const regularContainer = document.getElementById('regularEvents');
         if (regularContainer) {
-            if (data.nextEvent) {
-                const e = data.nextEvent;
-                regularContainer.innerHTML = `
-                <div class="event-card event-upcoming">
-                    <div class="event-body">
-                        <p class="event-date">${e.date} · ${e.time} МСК</p>
-                        <h3 class="event-name">${e.name}</h3>
-                        ${e.description ? `<p class="event-desc">${e.description}</p>` : ''}
+            const events = getRegularEventsForDisplay(data);
+            if (events.length) {
+                regularContainer.innerHTML = events.map(event => {
+                    const state = getEventDisplayState(event);
+                    return `
+                    <div class="event-card ${state.cardClass}">
+                        <div class="event-badge ${state.badgeClass}">${state.label}</div>
+                        <div class="event-body">
+                            <p class="event-date">${formatEventDateTime(event)}</p>
+                            <h3 class="event-name">${event.name}</h3>
+                            ${event.description ? `<p class="event-desc">${event.description}</p>` : ''}
+                        </div>
+                        <div class="event-world">Мир: <span>${event.world || 'Загадка'}</span></div>
                     </div>
-                    <div class="event-world">Мир: <span>${e.world || 'Загадка'}</span></div>
-                </div>
-                `;
+                    `;
+                }).join('');
             } else {
                 regularContainer.innerHTML = '<p class="events-empty">Пока нет запланированных ивентов</p>';
             }
