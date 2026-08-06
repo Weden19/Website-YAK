@@ -189,7 +189,8 @@ async function loadSpecialEvents() {
 // ===== ДАННЫЕ ИЗ VRCHAT.JSON =====
 async function loadVRChatData() {
     try {
-        const res = await fetch('data/vrchat.json');
+        const dataUrl = new URL('../data/vrchat.json', window.location.href);
+        const res = await fetch(dataUrl);
         if (!res.ok) throw new Error('Network error');
         const data = await res.json();
 
