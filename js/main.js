@@ -117,8 +117,24 @@ function getEventDisplayState(event, now = new Date()) {
 
 function getRegularEventsForDisplay(data, now = new Date()) {
     const rawEvents = Array.isArray(data?.events)
-        ? data.events
-        : (data?.nextEvent ? [data.nextEvent] : []);
+        ? [...data.events]
+        : [];
+
+    if (data?.nextEvent) {
+        const hasMatchingEvent = rawEvents.some(event => {
+            const eventName = event?.name || '';
+            const nextName = data.nextEvent?.name || '';
+            const eventDate = event?.date || '';
+            const nextDate = data.nextEvent?.date || '';
+            const eventTime = event?.time || '';
+            const nextTime = data.nextEvent?.time || '';
+            return eventName === nextName && eventDate === nextDate && eventTime === nextTime;
+        });
+
+        if (!hasMatchingEvent) {
+            rawEvents.push(data.nextEvent);
+        }
+    }
 
     const parsedEvents = rawEvents
         .map((event, index) => ({ ...event, _parsedDate: parseEventDateTime(event), _index: index }))
