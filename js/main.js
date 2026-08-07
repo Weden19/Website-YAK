@@ -129,14 +129,8 @@ function getRegularEventsForDisplay(data, now = new Date()) {
 
     const upcoming = parsedEvents.filter(event => event._parsedDate >= now);
     const baseEvents = upcoming.length ? upcoming : parsedEvents;
-    const weekStart = getStartOfWeek(baseEvents[0]._parsedDate);
-    const sameWeekEvents = baseEvents.filter(event => isSameWeek(event._parsedDate, weekStart));
 
-    if (sameWeekEvents.length > 1) {
-        return sameWeekEvents;
-    }
-
-    return baseEvents.length ? [baseEvents[0]] : [];
+    return baseEvents.length < 2 ? baseEvents.slice(0, 1) : baseEvents.slice(0, 3);
 }
 
 // ===== СТАТИСТИКА ИЗ SHEETS =====

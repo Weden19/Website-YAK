@@ -84,19 +84,20 @@ async function main() {
         const members = group.memberCount || 0;
         console.log(`Members: ${members}`);
 
-        let nextEvent = null;
+        const events = [];
         try {
             const eventRes = await axios.get(`${BASE_URL}/calendar/${GROUP_ID}/next`, { headers });
             const e = eventRes.data;
             if (e) {
                 const starts = e.startsAt ? new Date(e.startsAt) : null;
-                nextEvent = {
+                const event = {
                     name: e.title || 'Ивент',
                     description: e.description || '',
                     date: starts ? starts.toLocaleDateString('ru-RU', { timeZone: 'Europe/Moscow' }) : '',
                     time: starts ? starts.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Moscow' }) : '',
                 };
-                console.log(`Next event: ${nextEvent.name} (${nextEvent.date} ${nextEvent.time})`);
+                events.push(event);
+                console.log(`Next event: ${event.name} (${event.date} ${event.time})`);
             }
         } catch (e) {
             if (e.response?.status === 404) {
@@ -129,7 +130,13 @@ async function main() {
             console.warn('Could not fetch gallery:', e.response?.data || e.message);
         }
 
-        const data = { members, nextEvent, gallery, updated: new Date().toISOString() };
+        const data = {
+            members,
+            events,
+            nextEvent: events[0] || null,
+            gallery,
+            updated: new Date().toISOString(),
+        };
         fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
         console.log('Data saved to vrchat.json');
 
