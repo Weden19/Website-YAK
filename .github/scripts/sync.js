@@ -28,6 +28,56 @@ class CookieJar {
     }
 }
 
+// ===== Moscow week helpers =====
+function getMoscowWeekStart(date) {
+    const moscowOffsetMs = 3 * 60 * 60 * 1000;
+    const localMs = date.getTime() + moscowOffsetMs;
+    const localDate = new Date(localMs);
+    const weekday = localDate.getUTCDay() || 7;
+    const monday = new Date(Date.UTC(
+        localDate.getUTCFullYear(),
+        localDate.getUTCMonth(),
+        localDate.getUTCDate() - (weekday - 1)
+    ));
+    return new Date(monday.getTime() - moscowOffsetMs);
+}
+
+// ===== Fetch events from the ONE real endpoint =====
+// GET /calendar/{groupId}?date=<month>&n=<1..100>&offset=0
+// "date" = месяц поиска (по докам). Без него поведение недокументировано,
+// поэтому дергаем явно текущий и следующий месяц и мержим по id.
+async function fetchGroupCalendarEvents(headers) {
+    const now = new Date();
+    const monthDates = [0, 1, 2].map(offset =>
+        new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + offset, 1)).toISOString()
+    );
+
+    const byId = new Map();
+
+    for (const monthDate of monthDates) {
+        try {
+            const res = await axios.get(`${BASE_URL}/calendar/${GROUP_ID}`, {
+                headers,
+                params: { date: monthDate, n: 100, offset: 0 },
+            });
+            const results = Array.isArray(res.data?.results) ? res.data.results : [];
+            console.log(`[calendar] date=${monthDate} -> ${results.length} events (hasNext=${res.data?.hasNext}, totalCount=${res.data?.totalCount})`);
+            for (const ev of results) {
+                console.log(`  - id=${ev.id} title="${ev.title}" startsAt=${ev.startsAt} isDraft=${ev.isDraft} deletedAt=${ev.deletedAt}`);
+                if (ev.isDraft) continue;      // черновики не показываем
+                if (ev.deletedAt) continue;    // удалённые не показываем
+                if (!ev.id || !byId.has(ev.id)) {
+                    byId.set(ev.id || `${ev.title}|${ev.startsAt}`, ev);
+                }
+            }
+        } catch (err) {
+            console.warn(`[calendar] Failed for date=${monthDate}:`, err.response?.status, err.response?.data || err.message);
+        }
+    }
+
+    return Array.from(byId.values());
+}
+
 async function main() {
     try {
         const jar = new CookieJar();
@@ -84,114 +134,38 @@ async function main() {
         const members = group.memberCount || 0;
         console.log(`Members: ${members}`);
 
-        // ===== EVENTS: fetch upcoming events and pick week's events per rule =====
+        // ===== EVENTS =====
         const events = [];
-        // temporary holder for earliest upcoming event
-        var __nextEventTemp = null;
+        let nextEvent = null;
         try {
-            const tryUrls = [
-                `${BASE_URL}/calendar/${GROUP_ID}/week`,
-                `${BASE_URL}/calendar/${GROUP_ID}/events`,
-                `${BASE_URL}/calendar/${GROUP_ID}`,
-                `${BASE_URL}/calendar/${GROUP_ID}/next?n=50`,
-                `${BASE_URL}/calendar/${GROUP_ID}/next`,
-            ];
+            const rawEvents = await fetchGroupCalendarEvents(headers);
 
-            const allFetched = [];
-            for (const url of tryUrls) {
-                try {
-                    const res = await axios.get(url, { headers });
-                    if (!res || res.status >= 400) continue;
-                    const d = res.data;
-                    if (!d) continue;
+            const DEFAULT_DURATION_MS = 60 * 60 * 1000; // 1 час — совпадает с допущением в main.js (getEventDisplayState)
 
-                    if (Array.isArray(d)) {
-                        allFetched.push(...d);
-                        continue;
-                    }
-                    if (Array.isArray(d.data)) {
-                        allFetched.push(...d.data);
-                        continue;
-                    }
-                    if (Array.isArray(d.events)) {
-                        allFetched.push(...d.events);
-                        continue;
-                    }
-                    if (Array.isArray(d.items)) {
-                        allFetched.push(...d.items);
-                        continue;
-                    }
-                    if (Array.isArray(d.results)) {
-                        allFetched.push(...d.results);
-                        continue;
-                    }
-                    if (d && (d.startsAt || d.start || d.title || d.name)) {
-                        allFetched.push(d);
-                        continue;
-                    }
-                } catch (err) {
-                    // try next URL
-                }
-            }
-
-            function parseStarts(e) {
-                if (!e) return null;
-                if (e.startsAt) {
-                    const d = new Date(e.startsAt);
-                    if (!Number.isNaN(d.getTime())) return d;
-                }
-                if (e.start) {
-                    const d = new Date(e.start);
-                    if (!Number.isNaN(d.getTime())) return d;
-                }
-                if (typeof e.date === 'string' && /^\d{2}\.\d{2}\.\d{4}$/.test(e.date)) {
-                    const [day, month, year] = e.date.split('.').map(Number);
-                    const [hours = 0, minutes = 0] = (typeof e.time === 'string' && e.time.includes(':'))
-                        ? e.time.split(':').map(Number)
-                        : [0, 0];
-                    const moscowOffsetMs = 3 * 60 * 60 * 1000;
-                    return new Date(Date.UTC(year, month - 1, day, hours, minutes) - moscowOffsetMs);
-                }
-                if (typeof e.datetime === 'string') {
-                    const parsed = new Date(e.datetime);
-                    if (!Number.isNaN(parsed.getTime())) return parsed;
-                }
-                return null;
-            }
-
-            function getMoscowWeekStart(date) {
-                const moscowOffsetMs = 3 * 60 * 60 * 1000;
-                const localMs = date.getTime() + moscowOffsetMs;
-                const localDate = new Date(localMs);
-                const weekday = localDate.getUTCDay() || 7;
-                const monday = new Date(Date.UTC(
-                    localDate.getUTCFullYear(),
-                    localDate.getUTCMonth(),
-                    localDate.getUTCDate() - (weekday - 1)
-                ));
-                return new Date(monday.getTime() - moscowOffsetMs);
-            }
-
-            const allParsed = [];
-            for (const e of allFetched) {
-                if (!e) continue;
-                const starts = parseStarts(e);
-                allParsed.push({
-                    raw: e,
-                    name: e.title || e.name || 'Ивент',
-                    description: e.description || '',
-                    date: e.date || (starts ? starts.toLocaleDateString('ru-RU', { timeZone: 'Europe/Moscow' }) : ''),
-                    time: e.time || e.startTime || (starts ? starts.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Moscow' }) : ''),
-                    starts,
-                });
-            }
+            const parsed = rawEvents
+                .map(e => {
+                    const starts = e.startsAt ? new Date(e.startsAt) : null;
+                    if (!starts || Number.isNaN(starts.getTime())) return null;
+                    const endsRaw = e.endsAt ? new Date(e.endsAt) : null;
+                    const ends = (endsRaw && !Number.isNaN(endsRaw.getTime()))
+                        ? endsRaw
+                        : new Date(starts.getTime() + DEFAULT_DURATION_MS);
+                    return {
+                        id: e.id,
+                        name: e.title || 'Ивент',
+                        description: e.description || '',
+                        date: starts.toLocaleDateString('ru-RU', { timeZone: 'Europe/Moscow' }),
+                        time: starts.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Moscow' }),
+                        starts,
+                        ends,
+                    };
+                })
+                .filter(Boolean)
+                .sort((a, b) => a.starts - b.starts);
 
             const now = new Date();
-            const parsedWithStarts = allParsed
-                .filter(p => p.starts && !Number.isNaN(p.starts.getTime()));
-
             const groups = new Map();
-            for (const p of parsedWithStarts) {
+            for (const p of parsed) {
                 const wk = getMoscowWeekStart(p.starts).toISOString();
                 if (!groups.has(wk)) groups.set(wk, []);
                 groups.get(wk).push(p);
@@ -200,38 +174,34 @@ async function main() {
             const currentWeekStart = getMoscowWeekStart(now).toISOString();
             const nextWeekStart = new Date(new Date(currentWeekStart).getTime() + 7 * 24 * 60 * 60 * 1000).toISOString();
 
-            let chosen = [];
-            if ((groups.get(currentWeekStart) || []).length > 1) {
-                chosen = groups.get(currentWeekStart) || [];
-                console.log('Using current week events');
+            const currentWeekEvents = groups.get(currentWeekStart) || [];
+            const nextWeekEvents = groups.get(nextWeekStart) || [];
+
+            // Ивенты текущей недели, которые ещё не прошли: считаем прошедшим,
+            // только когда now >= ends (а не now >= starts — иначе ивент исчезал бы
+            // из выдачи в момент старта, хотя main.js ещё час показывает "Проходит")
+            const currentWeekUpcoming = currentWeekEvents.filter(p => now < p.ends);
+
+            let chosen;
+            if (currentWeekUpcoming.length > 0) {
+                chosen = currentWeekUpcoming;
+                console.log(`Using current week (upcoming only): ${chosen.length} event(s)`);
             } else {
-                chosen = groups.get(nextWeekStart) || [];
-                console.log('Using next week events');
+                chosen = nextWeekEvents;
+                console.log(`Current week has no upcoming events -> using next week: ${chosen.length} event(s)`);
             }
 
-            // if current week has exactly 1 event but next week has none, use current week
-            if (!chosen.length && (groups.get(currentWeekStart) || []).length === 1) {
-                chosen = groups.get(currentWeekStart) || [];
-                console.log('Falling back to current week with one event');
-            }
-
-            chosen.sort((a, b) => a.starts - b.starts);
-
-            const seen = new Set();
             for (const p of chosen) {
-                const key = `${p.name}||${p.date}||${p.time}`;
-                if (seen.has(key)) continue;
-                seen.add(key);
                 events.push({ name: p.name, description: p.description, date: p.date, time: p.time });
             }
 
-            const upcomingAll = allParsed
-                .filter(p => p.starts && p.starts >= now)
-                .sort((a, b) => a.starts - b.starts);
-            const nextEventObj = upcomingAll.length ? upcomingAll[0] : null;
-            __nextEventTemp = nextEventObj ? { name: nextEventObj.name, description: nextEventObj.description, date: nextEventObj.date, time: nextEventObj.time } : null;
+            const upcoming = parsed.filter(p => now < p.ends);
+            if (upcoming.length) {
+                const n = upcoming[0];
+                nextEvent = { name: n.name, description: n.description, date: n.date, time: n.time };
+            }
 
-            if (events.length) console.log(`Prepared ${events.length} event(s) for display`);
+            console.log(`Prepared ${events.length} event(s) for display`);
         } catch (e) {
             console.warn('Could not fetch events list:', e.response?.data || e.message);
         }
@@ -262,7 +232,7 @@ async function main() {
         const data = {
             members,
             events,
-            nextEvent: (typeof __nextEventTemp !== 'undefined' && __nextEventTemp) ? __nextEventTemp : (events[0] || null),
+            nextEvent: nextEvent || events[0] || null,
             gallery,
             updated: new Date().toISOString(),
         };
