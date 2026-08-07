@@ -116,24 +116,14 @@ function getEventDisplayState(event, now = new Date()) {
 }
 
 function getRegularEventsForDisplay(data, now = new Date()) {
-    const rawEvents = Array.isArray(data?.events)
-        ? [...data.events]
-        : [];
+    const rawEvents = [];
+
+    if (Array.isArray(data?.events)) {
+        rawEvents.push(...data.events);
+    }
 
     if (data?.nextEvent) {
-        const hasMatchingEvent = rawEvents.some(event => {
-            const eventName = event?.name || '';
-            const nextName = data.nextEvent?.name || '';
-            const eventDate = event?.date || '';
-            const nextDate = data.nextEvent?.date || '';
-            const eventTime = event?.time || '';
-            const nextTime = data.nextEvent?.time || '';
-            return eventName === nextName && eventDate === nextDate && eventTime === nextTime;
-        });
-
-        if (!hasMatchingEvent) {
-            rawEvents.push(data.nextEvent);
-        }
+        rawEvents.push(data.nextEvent);
     }
 
     const parsedEvents = rawEvents

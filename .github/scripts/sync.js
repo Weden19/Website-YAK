@@ -84,27 +84,125 @@ async function main() {
         const members = group.memberCount || 0;
         console.log(`Members: ${members}`);
 
+        // ===== EVENTS: fetch upcoming events and pick week's events per rule =====
         const events = [];
+        // temporary holder for earliest upcoming event
+        var __nextEventTemp = null;
         try {
-            const eventRes = await axios.get(`${BASE_URL}/calendar/${GROUP_ID}/next`, { headers });
-            const e = eventRes.data;
-            if (e) {
-                const starts = e.startsAt ? new Date(e.startsAt) : null;
-                const event = {
-                    name: e.title || 'Ивент',
-                    description: e.description || '',
-                    date: starts ? starts.toLocaleDateString('ru-RU', { timeZone: 'Europe/Moscow' }) : '',
-                    time: starts ? starts.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Moscow' }) : '',
-                };
-                events.push(event);
-                console.log(`Next event: ${event.name} (${event.date} ${event.time})`);
+            const tryUrls = [
+                `${BASE_URL}/calendar/${GROUP_ID}/week`,
+                `${BASE_URL}/calendar/${GROUP_ID}/events`,
+                `${BASE_URL}/calendar/${GROUP_ID}`,
+                `${BASE_URL}/calendar/${GROUP_ID}/next?n=50`,
+                `${BASE_URL}/calendar/${GROUP_ID}/next`,
+            ];
+
+            let fetched = null;
+            for (const url of tryUrls) {
+                try {
+                    const res = await axios.get(url, { headers });
+                    if (!res || res.status >= 400) continue;
+                    const d = res.data;
+                    if (!d) continue;
+                    if (Array.isArray(d)) { fetched = d; break; }
+                    if (Array.isArray(d.data)) { fetched = d.data; break; }
+                    if (Array.isArray(d.events)) { fetched = d.events; break; }
+                    if (d && (d.startsAt || d.start || d.title || d.name)) { fetched = [d]; break; }
+                } catch (err) {
+                    // try next
+                }
             }
-        } catch (e) {
-            if (e.response?.status === 404) {
-                console.log('No upcoming calendar event scheduled');
+
+            function parseStarts(e) {
+                if (!e) return null;
+                if (e.startsAt) {
+                    const d = new Date(e.startsAt);
+                    if (!Number.isNaN(d.getTime())) return d;
+                }
+                if (e.start) {
+                    const d = new Date(e.start);
+                    if (!Number.isNaN(d.getTime())) return d;
+                }
+                if (typeof e.date === 'string' && /^\d{2}\.\d{2}\.\d{4}$/.test(e.date)) {
+                    const [day, month, year] = e.date.split('.').map(Number);
+                    const [hours = 0, minutes = 0] = (typeof e.time === 'string' && e.time.includes(':')) ? e.time.split(':').map(Number) : [0,0];
+                    const moscowOffsetMs = 3 * 60 * 60 * 1000;
+                    return new Date(Date.UTC(year, month - 1, day, hours, minutes) - moscowOffsetMs);
+                }
+                return null;
+            }
+
+            function getMoscowWeekStart(date) {
+                const moscowOffsetMs = 3 * 60 * 60 * 1000;
+                const ms = date.getTime() + moscowOffsetMs;
+                const m = new Date(ms);
+                const year = m.getUTCFullYear();
+                const month = m.getUTCMonth();
+                const day = m.getUTCDate();
+                const weekday = m.getUTCDay() || 7; // Monday=1
+                const mondayLocal = new Date(Date.UTC(year, month, day - (weekday - 1)));
+                return new Date(mondayLocal.getTime() - moscowOffsetMs);
+            }
+
+            const allParsed = [];
+            if (fetched && fetched.length) {
+                for (const e of fetched) {
+                    const starts = parseStarts(e);
+                    allParsed.push({ raw: e, name: e.title || e.name || 'Ивент', description: e.description || '', date: e.date || (starts ? starts.toLocaleDateString('ru-RU', { timeZone: 'Europe/Moscow' }) : ''), time: e.time || (starts ? starts.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Moscow' }) : ''), starts });
+                }
+            }
+
+            // also try 'next' to ensure we have upcoming
+            try {
+                const res = await axios.get(`${BASE_URL}/calendar/${GROUP_ID}/next`, { headers });
+                const e = res.data;
+                if (e) {
+                    const starts = parseStarts(e);
+                    allParsed.push({ raw: e, name: e.title || e.name || 'Ивент', description: e.description || '', date: e.date || (starts ? starts.toLocaleDateString('ru-RU', { timeZone: 'Europe/Moscow' }) : ''), time: e.time || (starts ? starts.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Moscow' }) : ''), starts });
+                }
+            } catch (err) {
+                // ignore
+            }
+
+            const now = new Date();
+            const parsedWithStarts = allParsed.filter(p => p.starts && !Number.isNaN(p.starts.getTime()));
+
+            const groups = new Map();
+            for (const p of parsedWithStarts) {
+                const wk = getMoscowWeekStart(p.starts).toISOString();
+                if (!groups.has(wk)) groups.set(wk, []);
+                groups.get(wk).push(p);
+            }
+
+            const currentWeekStart = getMoscowWeekStart(now).toISOString();
+            const nextWeekStart = new Date(new Date(currentWeekStart).getTime() + 7 * 24 * 60 * 60 * 1000).toISOString();
+
+            let chosen = [];
+            if ((groups.get(currentWeekStart) || []).length > 1) {
+                chosen = groups.get(currentWeekStart) || [];
+                console.log('Using current week events');
             } else {
-                console.warn('Could not fetch next event:', e.response?.data || e.message);
+                chosen = groups.get(nextWeekStart) || [];
+                console.log('Using next week events');
             }
+
+            chosen.sort((a, b) => a.starts - b.starts);
+
+            const seen = new Set();
+            for (const p of chosen) {
+                const key = `${p.name}||${p.date}||${p.time}`;
+                if (seen.has(key)) continue;
+                seen.add(key);
+                events.push({ name: p.name, description: p.description, date: p.date, time: p.time });
+            }
+
+            const upcomingAll = allParsed.filter(p => p.starts && p.starts >= now).sort((a,b) => a.starts - b.starts);
+            const nextEventObj = upcomingAll.length ? upcomingAll[0] : null;
+            __nextEventTemp = nextEventObj ? { name: nextEventObj.name, description: nextEventObj.description, date: nextEventObj.date, time: nextEventObj.time } : null;
+
+            if (events.length) console.log(`Prepared ${events.length} event(s) for display`);
+        } catch (e) {
+            console.warn('Could not fetch events list:', e.response?.data || e.message);
         }
 
         let gallery = [];
@@ -133,7 +231,7 @@ async function main() {
         const data = {
             members,
             events,
-            nextEvent: events[0] || null,
+            nextEvent: (typeof __nextEventTemp !== 'undefined' && __nextEventTemp) ? __nextEventTemp : (events[0] || null),
             gallery,
             updated: new Date().toISOString(),
         };
