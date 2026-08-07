@@ -116,27 +116,28 @@ function getEventDisplayState(event, now = new Date()) {
 }
 
 function getRegularEventsForDisplay(data, now = new Date()) {
-    const rawEvents = [];
+    const rawEvents = Array.isArray(data?.events) ? [...data.events] : [];
 
-    if (Array.isArray(data?.events)) {
-        rawEvents.push(...data.events);
-    }
-
-    if (data?.nextEvent) {
+    if (!rawEvents.length && data?.nextEvent) {
         rawEvents.push(data.nextEvent);
     }
 
-    const parsedEvents = rawEvents
+    const uniqueEvents = [];
+    const seen = new Set();
+    rawEvents.forEach(event => {
+        const key = `${event?.name || ''}||${event?.date || ''}||${event?.time || ''}`;
+        if (!seen.has(key)) {
+            seen.add(key);
+            uniqueEvents.push(event);
+        }
+    });
+
+    const parsedEvents = uniqueEvents
         .map((event, index) => ({ ...event, _parsedDate: parseEventDateTime(event), _index: index }))
         .filter(event => event._parsedDate)
         .sort((a, b) => a._parsedDate - b._parsedDate);
 
-    if (!parsedEvents.length) return [];
-
-    const upcoming = parsedEvents.filter(event => event._parsedDate >= now);
-    const baseEvents = upcoming.length ? upcoming : parsedEvents;
-
-    return baseEvents.length < 2 ? baseEvents.slice(0, 1) : baseEvents.slice(0, 3);
+    return parsedEvents;
 }
 
 // ===== СТАТИСТИКА ИЗ SHEETS =====

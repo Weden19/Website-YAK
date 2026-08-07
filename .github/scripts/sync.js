@@ -97,19 +97,40 @@ async function main() {
                 `${BASE_URL}/calendar/${GROUP_ID}/next`,
             ];
 
-            let fetched = null;
+            const allFetched = [];
             for (const url of tryUrls) {
                 try {
                     const res = await axios.get(url, { headers });
                     if (!res || res.status >= 400) continue;
                     const d = res.data;
                     if (!d) continue;
-                    if (Array.isArray(d)) { fetched = d; break; }
-                    if (Array.isArray(d.data)) { fetched = d.data; break; }
-                    if (Array.isArray(d.events)) { fetched = d.events; break; }
-                    if (d && (d.startsAt || d.start || d.title || d.name)) { fetched = [d]; break; }
+
+                    if (Array.isArray(d)) {
+                        allFetched.push(...d);
+                        continue;
+                    }
+                    if (Array.isArray(d.data)) {
+                        allFetched.push(...d.data);
+                        continue;
+                    }
+                    if (Array.isArray(d.events)) {
+                        allFetched.push(...d.events);
+                        continue;
+                    }
+                    if (Array.isArray(d.items)) {
+                        allFetched.push(...d.items);
+                        continue;
+                    }
+                    if (Array.isArray(d.results)) {
+                        allFetched.push(...d.results);
+                        continue;
+                    }
+                    if (d && (d.startsAt || d.start || d.title || d.name)) {
+                        allFetched.push(d);
+                        continue;
+                    }
                 } catch (err) {
-                    // try next
+                    // try next URL
                 }
             }
 
@@ -125,47 +146,49 @@ async function main() {
                 }
                 if (typeof e.date === 'string' && /^\d{2}\.\d{2}\.\d{4}$/.test(e.date)) {
                     const [day, month, year] = e.date.split('.').map(Number);
-                    const [hours = 0, minutes = 0] = (typeof e.time === 'string' && e.time.includes(':')) ? e.time.split(':').map(Number) : [0,0];
+                    const [hours = 0, minutes = 0] = (typeof e.time === 'string' && e.time.includes(':'))
+                        ? e.time.split(':').map(Number)
+                        : [0, 0];
                     const moscowOffsetMs = 3 * 60 * 60 * 1000;
                     return new Date(Date.UTC(year, month - 1, day, hours, minutes) - moscowOffsetMs);
+                }
+                if (typeof e.datetime === 'string') {
+                    const parsed = new Date(e.datetime);
+                    if (!Number.isNaN(parsed.getTime())) return parsed;
                 }
                 return null;
             }
 
             function getMoscowWeekStart(date) {
                 const moscowOffsetMs = 3 * 60 * 60 * 1000;
-                const ms = date.getTime() + moscowOffsetMs;
-                const m = new Date(ms);
-                const year = m.getUTCFullYear();
-                const month = m.getUTCMonth();
-                const day = m.getUTCDate();
-                const weekday = m.getUTCDay() || 7; // Monday=1
-                const mondayLocal = new Date(Date.UTC(year, month, day - (weekday - 1)));
-                return new Date(mondayLocal.getTime() - moscowOffsetMs);
+                const localMs = date.getTime() + moscowOffsetMs;
+                const localDate = new Date(localMs);
+                const weekday = localDate.getUTCDay() || 7;
+                const monday = new Date(Date.UTC(
+                    localDate.getUTCFullYear(),
+                    localDate.getUTCMonth(),
+                    localDate.getUTCDate() - (weekday - 1)
+                ));
+                return new Date(monday.getTime() - moscowOffsetMs);
             }
 
             const allParsed = [];
-            if (fetched && fetched.length) {
-                for (const e of fetched) {
-                    const starts = parseStarts(e);
-                    allParsed.push({ raw: e, name: e.title || e.name || 'Ивент', description: e.description || '', date: e.date || (starts ? starts.toLocaleDateString('ru-RU', { timeZone: 'Europe/Moscow' }) : ''), time: e.time || (starts ? starts.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Moscow' }) : ''), starts });
-                }
-            }
-
-            // also try 'next' to ensure we have upcoming
-            try {
-                const res = await axios.get(`${BASE_URL}/calendar/${GROUP_ID}/next`, { headers });
-                const e = res.data;
-                if (e) {
-                    const starts = parseStarts(e);
-                    allParsed.push({ raw: e, name: e.title || e.name || 'Ивент', description: e.description || '', date: e.date || (starts ? starts.toLocaleDateString('ru-RU', { timeZone: 'Europe/Moscow' }) : ''), time: e.time || (starts ? starts.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Moscow' }) : ''), starts });
-                }
-            } catch (err) {
-                // ignore
+            for (const e of allFetched) {
+                if (!e) continue;
+                const starts = parseStarts(e);
+                allParsed.push({
+                    raw: e,
+                    name: e.title || e.name || 'Ивент',
+                    description: e.description || '',
+                    date: e.date || (starts ? starts.toLocaleDateString('ru-RU', { timeZone: 'Europe/Moscow' }) : ''),
+                    time: e.time || e.startTime || (starts ? starts.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Moscow' }) : ''),
+                    starts,
+                });
             }
 
             const now = new Date();
-            const parsedWithStarts = allParsed.filter(p => p.starts && !Number.isNaN(p.starts.getTime()));
+            const parsedWithStarts = allParsed
+                .filter(p => p.starts && !Number.isNaN(p.starts.getTime()));
 
             const groups = new Map();
             for (const p of parsedWithStarts) {
@@ -186,6 +209,12 @@ async function main() {
                 console.log('Using next week events');
             }
 
+            // if current week has exactly 1 event but next week has none, use current week
+            if (!chosen.length && (groups.get(currentWeekStart) || []).length === 1) {
+                chosen = groups.get(currentWeekStart) || [];
+                console.log('Falling back to current week with one event');
+            }
+
             chosen.sort((a, b) => a.starts - b.starts);
 
             const seen = new Set();
@@ -196,7 +225,9 @@ async function main() {
                 events.push({ name: p.name, description: p.description, date: p.date, time: p.time });
             }
 
-            const upcomingAll = allParsed.filter(p => p.starts && p.starts >= now).sort((a,b) => a.starts - b.starts);
+            const upcomingAll = allParsed
+                .filter(p => p.starts && p.starts >= now)
+                .sort((a, b) => a.starts - b.starts);
             const nextEventObj = upcomingAll.length ? upcomingAll[0] : null;
             __nextEventTemp = nextEventObj ? { name: nextEventObj.name, description: nextEventObj.description, date: nextEventObj.date, time: nextEventObj.time } : null;
 
