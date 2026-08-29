@@ -102,7 +102,6 @@ async function main() {
                 const secret = TOTP_SECRET.replace(/\s/g, '');
                 const result = await otplib.generate({ secret, encoding: 'base32' });
                 const token = typeof result === 'string' ? result : result.otp || result.token || String(result);
-                console.log('TOTP token:', token);
 
                 const tfaRes = await axios.post(`${BASE_URL}/auth/twofactorauth/totp/verify`,
                     { code: token },
