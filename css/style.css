@@ -1095,95 +1095,6 @@ body {
   background: #d96010;
 }
 
-/* ─── FLEET ─── */
-.fleet-list {
-  display: flex;
-  flex-direction: column;
-  gap: 64px;
-}
-
-.fleet-item {
-  display: grid;
-  grid-template-columns: 1fr 280px;
-  gap: 48px;
-  align-items: center;
-}
-
-.fleet-item-reverse {
-  grid-template-columns: 1fr 280px;
-}
-
-.fleet-item-reverse .fleet-info { order: 1; }
-.fleet-item-reverse .fleet-viewer { order: 2; }
-
-.fleet-viewer {
-  width: 280px;
-  height: 280px;
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-  background: transparent;
-  border: none;
-  flex-shrink: 0;
-}
-
-.fleet-viewer-placeholder {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.fleet-placeholder-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  opacity: 0.5;
-  filter: grayscale(1);
-}
-
-.fleet-status {
-  display: inline-block;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  padding: 4px 10px;
-  border-radius: 4px;
-  margin-bottom: 12px;
-}
-
-.fleet-status-active { background: rgba(42,157,108,0.15); color: #2a9d6c; }
-.fleet-status-incoming { background: var(--accent-dim); color: var(--accent); }
-.fleet-status-planned { background: rgba(255,255,255,0.05); color: var(--text-muted); }
-
-.fleet-name {
-  font-size: 24px;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-  margin-bottom: 12px;
-}
-
-.fleet-desc {
-  font-size: 15px;
-  color: var(--text-secondary);
-  line-height: 1.75;
-}
-
-@media (max-width: 768px) {
-  .fleet-item,
-  .fleet-item-reverse {
-    grid-template-columns: 1fr;
-  }
-
-  .fleet-item .fleet-info,
-  .fleet-item-reverse .fleet-info { order: 1; }
-
-  .fleet-item .fleet-viewer,
-  .fleet-item-reverse .fleet-viewer { order: 2; }
-
-  .fleet-viewer {
-    width: 100%;
-    height: 240px;
-  }
-}
 .site-header .container {
     display: flex;
     align-items: center;
@@ -1204,4 +1115,219 @@ body {
     height: auto;
     margin: 0 auto 48px;
     object-fit: contain;
+}
+
+/* ===== Система рангов (members page) ===== */
+:root {
+  --rank-flight: #38bdf8;
+  --rank-flight-dim: rgba(56,189,248,0.12);
+  --rank-infantry: #4ade80;
+  --rank-infantry-dim: rgba(74,222,128,0.12);
+  --rank-org: #d4af37;
+  --rank-org-dim: rgba(212,175,55,0.12);
+}
+
+.ranks-intro {
+  color: var(--text-secondary);
+  margin-bottom: 36px;
+  max-width: 640px;
+  line-height: 1.6;
+}
+
+.rank-group { margin-bottom: 44px; }
+.rank-group:last-of-type { margin-bottom: 0; }
+
+.rank-group-title {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: .02em;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: var(--text-primary);
+}
+.rank-group-title .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+.rank-group--flight .dot { background: var(--rank-flight); box-shadow: 0 0 8px var(--rank-flight); }
+.rank-group--infantry .dot { background: var(--rank-infantry); box-shadow: 0 0 8px var(--rank-infantry); }
+.rank-group--org .dot { background: var(--rank-org); box-shadow: 0 0 8px var(--rank-org); }
+
+.rank-group-sub {
+  color: var(--text-secondary);
+  font-size: 14px;
+  margin-bottom: 26px;
+}
+
+.rank-chain {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  row-gap: 18px;
+}
+
+.rank-arrow {
+  color: var(--text-muted);
+  font-size: 16px;
+  flex-shrink: 0;
+  padding: 0 2px;
+}
+
+.rank-node {
+  position: relative;
+  font-family: var(--font);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  padding: 11px 16px;
+  cursor: default;
+  text-align: center;
+  line-height: 1.35;
+  white-space: nowrap;
+  transition: border-color .15s ease, background .15s ease, transform .15s ease;
+}
+.rank-node:hover,
+.rank-node:focus-visible {
+  transform: translateY(-2px);
+  outline: none;
+}
+.rank-group--flight .rank-node:hover,
+.rank-group--flight .rank-node:focus-visible { border-color: var(--rank-flight); background: var(--rank-flight-dim); }
+.rank-group--infantry .rank-node:hover,
+.rank-group--infantry .rank-node:focus-visible { border-color: var(--rank-infantry); background: var(--rank-infantry-dim); }
+.rank-group--org .rank-node:hover,
+.rank-group--org .rank-node:focus-visible { border-color: var(--rank-org); background: var(--rank-org-dim); }
+
+.rank-node.rank-node--dashed { border-style: dashed; }
+
+.rank-node::after {
+  content: attr(data-desc);
+  position: absolute;
+  bottom: calc(100% + 12px);
+  left: 50%;
+  transform: translateX(-50%) translateY(6px);
+  width: 220px;
+  white-space: normal;
+  background: var(--bg-alt);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  padding: 10px 12px;
+  font-size: 12.5px;
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--text-secondary);
+  text-align: left;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .15s ease, transform .15s ease;
+  z-index: 30;
+  box-shadow: 0 12px 28px rgba(0,0,0,.5);
+}
+.rank-node:hover::after,
+.rank-node:focus-visible::after {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.rank-node-note {
+  display: block;
+  font-size: 10.5px;
+  font-weight: 400;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+/* Лётный состав — единая grid-строка, курсанты и лётчики на одном уровне */
+.rank-flight-grid {
+  display: grid;
+  grid-template-columns: repeat(11, auto);
+  align-items: center;
+  column-gap: 8px;
+  row-gap: 16px;
+}
+
+.rank-flight-bracket {
+  position: relative;
+  height: 14px;
+  margin-top: 4px;
+}
+.rank-flight-bracket::before {
+  content: '';
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  top: 0;
+  border-top: 1px dashed var(--border-strong);
+}
+
+.rank-flight-instructor {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.rank-bracket-connector {
+  width: 1px;
+  height: 14px;
+  background-image: linear-gradient(var(--border-strong) 60%, transparent 0%);
+  background-size: 1px 4px;
+  background-repeat: repeat-y;
+}
+
+/* Пехотный состав — вилка от Старшины к началу Прапорщика и Мл. лейтенанта */
+.rank-fork-svg {
+  display: block;
+  width: 100%;
+  height: 40px;
+  margin-top: 6px;
+}
+.rank-fork-svg path {
+  fill: none;
+  stroke: var(--border-strong);
+  stroke-width: 1.5;
+  vector-effect: non-scaling-stroke;
+}
+
+.rank-forks {
+  display: flex;
+  gap: 36px;
+  margin-top: 4px;
+  flex-wrap: wrap;
+}
+.rank-fork { flex: 1; min-width: 240px; }
+.rank-fork-label {
+  color: var(--text-muted);
+  font-size: 12px;
+  margin-bottom: 12px;
+}
+
+@media (max-width: 640px) {
+  .rank-node { white-space: normal; font-size: 12.5px; }
+  .rank-node::after {
+    width: 170px;
+    font-size: 11.5px;
+    left: 0;
+    transform: translateX(0) translateY(6px);
+  }
+  .rank-node:hover::after,
+  .rank-node:focus-visible::after { transform: translateX(0) translateY(0); }
+
+  .rank-flight-grid { grid-template-columns: 1fr !important; }
+  .rank-flight-grid > .rank-node,
+  .rank-flight-grid > .rank-flight-bracket,
+  .rank-flight-grid > .rank-flight-instructor { grid-column: 1 !important; }
+  .rank-flight-grid > .rank-arrow { grid-column: 1 !important; transform: rotate(90deg); }
+  .rank-flight-bracket { display: none; }
+
+  .rank-forks { gap: 24px; }
 }

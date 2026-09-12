@@ -67,7 +67,7 @@
       <div class="container">
         <div class="hero-panel">
           <h1 class="hero-title" style="font-size: clamp(32px,5vw,52px)">Для участников</h1>
-          <p class="hero-desc">Правила для аватаров, методические материалы и файлы для участников группы.</p>
+          <p class="hero-desc">Система званий, правила служебных аватаров, важные файлы и методические материалы</p>
         </div>
       </div>
     </section>
@@ -88,7 +88,95 @@
       </div>
     </section>
 
-    <section class="section section-alt">
+    <section class="section" id="ranks">
+      <div class="container">
+        <h2 class="section-title">Система рангов</h2>
+        <p class="ranks-intro">Единая система званий сообщества из трёх направлений. Наведите курсор на звание (или коснитесь на телефоне), чтобы увидеть краткое описание.</p>
+
+        <div class="rank-group rank-group--flight">
+          <h3 class="rank-group-title"><span class="dot"></span>1. Лётный состав</h3>
+          <p class="rank-group-sub">Пилоты и авиационные специалисты</p>
+
+          <div class="rank-flight-grid">
+            <div class="rank-node" style="grid-column:1" tabindex="0" data-desc="Ничего не умеет и ничего не знает.">Курсант<br>2-го класса</div>
+            <span class="rank-arrow" style="grid-column:2">→</span>
+            <div class="rank-node" style="grid-column:3" tabindex="0" data-desc="Знает базовую теорию, умеет управлять самолётом, но не умеет вертолётом.">Курсант<br>1-ого класса</div>
+            <span class="rank-arrow" style="grid-column:4">→</span>
+            <div class="rank-node" style="grid-column:5" tabindex="0" data-desc="Полноценный лётчик, сдавший экзамен.">Лётчик<br>(без классности)</div>
+            <span class="rank-arrow" style="grid-column:6">→</span>
+            <div class="rank-node" style="grid-column:7" tabindex="0" data-desc="Владеет базовыми приёмами, умеет применять их в бою.">Лётчик<br>3-его класса</div>
+            <span class="rank-arrow" style="grid-column:8">→</span>
+            <div class="rank-node" style="grid-column:9" tabindex="0" data-desc="Серьёзный боевой лётчик, способен побеждать среднестатистических лётчиков.">Лётчик<br>2-ого класса</div>
+            <span class="rank-arrow" style="grid-column:10">→</span>
+            <div class="rank-node" style="grid-column:11" tabindex="0" data-desc="Высшая лётная квалификация. Способен побеждать в бою лучших пилотов.">Лётчик<br>1-ого класса</div>
+
+            <div class="rank-flight-bracket" style="grid-column:5/12"></div>
+            <div class="rank-flight-instructor" style="grid-column:5/12">
+              <div class="rank-bracket-connector"></div>
+              <div class="rank-node rank-node--dashed" tabindex="0" data-desc="Лётчик, способный обучать. Складывается с классностью. Доступно всем лётчикам — от «без классности» до 1-ого класса.">Инструктор<br><span class="rank-node-note">(доп. звание)</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="rank-group rank-group--infantry">
+          <h3 class="rank-group-title"><span class="dot"></span>2. Пехотный состав</h3>
+          <p class="rank-group-sub">Наземные операции и поддержка</p>
+
+          <div class="rank-chain">
+            <div class="rank-node" tabindex="0" data-desc="Военнослужащий, выполняет задачи в составе подразделения.">Рядовой</div>
+            <span class="rank-arrow">→</span>
+            <div class="rank-node" tabindex="0" data-desc="Опытный военнослужащий, может нести дополнительные обязанности.">Ефрейтор</div>
+            <span class="rank-arrow">→</span>
+            <div class="rank-node" tabindex="0" data-desc="Заместитель командира отделения. Организует небольшую группу.">Младший<br>сержант</div>
+            <span class="rank-arrow">→</span>
+            <div class="rank-node" tabindex="0" data-desc="Командир отделения. Руководит личным составом, отвечает за выполнение задач.">Сержант</div>
+            <span class="rank-arrow">→</span>
+            <div class="rank-node" tabindex="0" data-desc="Старший командир (может выполнять функции командира взвода/группы в его отсутствие).">Старший<br>сержант</div>
+            <span class="rank-arrow">→</span>
+            <div class="rank-node" tabindex="0" data-desc="Опытный старший специалист. Отвечает за личный состав и снаряжение.">Старшина</div>
+          </div>
+
+          
+
+          <div class="rank-forks">
+            <div class="rank-fork">
+              <p class="rank-fork-label">В развитие проф. навыков</p>
+              <div class="rank-chain">
+                <div class="rank-node" tabindex="0" data-desc="Специалист в выбранном направлении. Может не занимать командирскую должность.">Прапорщик</div>
+                <span class="rank-arrow">→</span>
+                <div class="rank-node" tabindex="0" data-desc="Старший специалист. Инструктор, эксперт. Обеспечивает подготовку личного состава.">Старший<br>прапорщик</div>
+              </div>
+            </div>
+            <div class="rank-fork">
+              <p class="rank-fork-label">По командованию</p>
+              <div class="rank-chain">
+                <div class="rank-node" tabindex="0" data-desc="Командир взвода или его заместитель. Отвечает за группу и задачи взвода.">Младший<br>лейтенант</div>
+                <span class="rank-arrow">→</span>
+                <div class="rank-node" tabindex="0" data-desc="Полноценный офицер. Организует мероприятия, руководит взводом.">Лейтенант</div>
+                <span class="rank-arrow">→</span>
+                <div class="rank-node" tabindex="0" data-desc="Старший офицер. Координирует подразделения, решает широкий круг задач.">Старший<br>лейтенант</div>
+                <span class="rank-arrow">→</span>
+                <div class="rank-node" tabindex="0" data-desc="Командир роты. Отвечает за роту и подразделения в целом.">Капитан</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="rank-group rank-group--org">
+          <h3 class="rank-group-title"><span class="dot"></span>3. Организационный состав</h3>
+          <p class="rank-group-sub">Развитие сообщества, мероприятия и внутренняя организация</p>
+          <div class="rank-chain">
+            <div class="rank-node" tabindex="0" data-desc="Представители других сообществ VRChat.">Друзья<br>сообщества</div>
+            <span class="rank-arrow">→</span>
+            <div class="rank-node" tabindex="0" data-desc="Начинающие организаторы, помогающие в подготовке мероприятий.">Младший<br>оргсостав</div>
+            <span class="rank-arrow">→</span>
+            <div class="rank-node" tabindex="0" data-desc="Полноценные организаторы, отвечающие за развитие сообщества и проведение мероприятий.">Оргсостав</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+<section class="section section-alt">
       <div class="container">
         <h2 class="section-title">Материалы</h2>
         <p class="avatars-intro">Префабы, текстуры и другие ассеты для аватаров участников.</p>
