@@ -137,7 +137,22 @@ function getRegularEventsForDisplay(data, now = new Date()) {
         .filter(event => event._parsedDate)
         .sort((a, b) => a._parsedDate - b._parsedDate);
 
-    return parsedEvents;
+    const futureEvents = parsedEvents.filter(event => event._parsedDate >= now);
+    if (!futureEvents.length) return [];
+
+    const currentWeekStart = getStartOfWeek(now);
+    const currentWeekEvents = futureEvents.filter(event => isSameWeek(event._parsedDate, currentWeekStart));
+    if (currentWeekEvents.length) return currentWeekEvents;
+
+    const nextWeekStart = new Date(currentWeekStart);
+    nextWeekStart.setDate(nextWeekStart.getDate() + 7);
+    const nextWeekEnd = new Date(nextWeekStart);
+    nextWeekEnd.setDate(nextWeekEnd.getDate() + 7);
+
+    const nextWeekEvents = futureEvents.filter(event => event._parsedDate >= nextWeekStart && event._parsedDate < nextWeekEnd);
+    if (nextWeekEvents.length) return nextWeekEvents;
+
+    return futureEvents.slice(0, 3);
 }
 
 // ===== СТАТИСТИКА ИЗ SHEETS =====
