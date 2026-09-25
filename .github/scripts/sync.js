@@ -164,32 +164,8 @@ async function main() {
                 .sort((a, b) => a.starts - b.starts);
 
             const now = new Date();
-            const groups = new Map();
-            for (const p of parsed) {
-                const wk = getMoscowWeekStart(p.starts).toISOString();
-                if (!groups.has(wk)) groups.set(wk, []);
-                groups.get(wk).push(p);
-            }
-
-            const currentWeekStart = getMoscowWeekStart(now).toISOString();
-            const nextWeekStart = new Date(new Date(currentWeekStart).getTime() + 7 * 24 * 60 * 60 * 1000).toISOString();
-
-            const currentWeekEvents = groups.get(currentWeekStart) || [];
-            const nextWeekEvents = groups.get(nextWeekStart) || [];
-
-            // Ивенты текущей недели, которые ещё не прошли: считаем прошедшим,
-            // только когда now >= ends (а не now >= starts — иначе ивент исчезал бы
-            // из выдачи в момент старта, хотя main.js ещё час показывает "Проходит")
-            const currentWeekUpcoming = currentWeekEvents.filter(p => now < p.ends);
-
-            let chosen;
-            if (currentWeekUpcoming.length > 0) {
-                chosen = currentWeekUpcoming;
-                console.log(`Using current week (upcoming only): ${chosen.length} event(s)`);
-            } else {
-                chosen = nextWeekEvents;
-                console.log(`Current week has no upcoming events -> using next week: ${chosen.length} event(s)`);
-            }
+            const chosen = parsed.filter(p => now < p.ends);
+            console.log(`Using all upcoming events: ${chosen.length} event(s)`);
 
             for (const p of chosen) {
                 events.push({ name: p.name, description: p.description, date: p.date, time: p.time });
