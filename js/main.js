@@ -115,6 +115,67 @@ function getEventDisplayState(event, now = new Date()) {
     return { label: 'Прошёл', badgeClass: 'event-badge-past', cardClass: '' };
 }
 
+function createEventCard(event, { linkWorld = false, showEmptyDescription = false } = {}) {
+    const state = getEventDisplayState(event);
+    const card = document.createElement('div');
+    card.className = `event-card ${state.cardClass}`;
+
+    const badge = document.createElement('div');
+    badge.className = `event-badge ${state.badgeClass}`;
+    badge.textContent = state.label;
+    card.appendChild(badge);
+
+    const body = document.createElement('div');
+    body.className = 'event-body';
+
+    const date = document.createElement('p');
+    date.className = 'event-date';
+    date.textContent = formatEventDateTime(event);
+    body.appendChild(date);
+
+    const name = document.createElement('h3');
+    name.className = 'event-name';
+    name.textContent = event?.name || '';
+    body.appendChild(name);
+
+    if (event?.description || showEmptyDescription) {
+        const description = document.createElement('p');
+        description.className = 'event-desc';
+        description.textContent = event?.description || '';
+        body.appendChild(description);
+    }
+    card.appendChild(body);
+
+    const world = document.createElement('div');
+    world.className = 'event-world';
+    world.append('Мир: ');
+    const worldName = event?.world || 'Загадка';
+    const worldHref = event?.world_link || event?.worldLink || event?.world_url
+        || event?.worldUrl || event?.link || event?.url || '';
+    let safeWorldUrl = null;
+    if (linkWorld && typeof worldHref === 'string') {
+        try {
+            const url = new URL(worldHref);
+            if (url.protocol === 'https:' || url.protocol === 'http:') safeWorldUrl = url.href;
+        } catch {
+            safeWorldUrl = null;
+        }
+    }
+
+    const worldElement = document.createElement(safeWorldUrl ? 'a' : 'span');
+    if (safeWorldUrl) {
+        worldElement.href = safeWorldUrl;
+        worldElement.className = 'event-world-link';
+        worldElement.target = '_blank';
+        worldElement.rel = 'noopener noreferrer';
+    }
+    worldElement.textContent = worldName;
+    world.appendChild(worldElement);
+    card.appendChild(world);
+
+    return card;
+}
+
 function getRegularEventsForDisplay(data, now = new Date()) {
     const rawEvents = Array.isArray(data?.events) ? [...data.events] : [];
 
@@ -174,30 +235,23 @@ async function loadSpecialEvents() {
     try {
         const rows = await fetchSheet('events');
         if (!rows.length) {
-            container.innerHTML = '<p class="events-empty">Специальных ивентов пока нет</p>';
+            const emptyMessage = document.createElement('p');
+            emptyMessage.className = 'events-empty';
+            emptyMessage.textContent = 'Специальных ивентов пока нет';
+            container.replaceChildren(emptyMessage);
             return;
         }
-        container.innerHTML = rows.map(r => {
-            const state = getEventDisplayState(r);
-            const worldName = r.world || 'Загадка';
-            const worldHref = r.world_link || r.worldLink || r.world_url || r.worldUrl || r.link || r.url || '';
-            const worldHtml = worldHref
-                ? `<a href="${worldHref}" class="event-world-link" target="_blank" rel="noopener noreferrer">${worldName}</a>`
-                : `<span>${worldName}</span>`;
-            return `
-            <div class="event-card ${state.cardClass}">
-                <div class="event-badge ${state.badgeClass}">${state.label}</div>
-                <div class="event-body">
-                    <p class="event-date">${formatEventDateTime(r)}</p>
-                    <h3 class="event-name">${r.name}</h3>
-                    <p class="event-desc">${r.description}</p>
-                </div>
-                <div class="event-world">Мир: ${worldHtml}</div>
-            </div>
-            `;
-        }).join('');
+        container.replaceChildren(...rows.map(row => createEventCard(row, {
+            linkWorld: true,
+            showEmptyDescription: true,
+        })));
     } catch (e) {
-        if (container) container.innerHTML = '<p class="events-empty">Ошибка загрузки</p>';
+        if (container) {
+            const errorMessage = document.createElement('p');
+            errorMessage.className = 'events-empty';
+            errorMessage.textContent = 'Ошибка загрузки';
+            container.replaceChildren(errorMessage);
+        }
         console.warn(e);
     }
 }
@@ -219,22 +273,12 @@ async function loadVRChatData() {
         if (regularContainer) {
             const events = getRegularEventsForDisplay(data);
             if (events.length) {
-                regularContainer.innerHTML = events.map(event => {
-                    const state = getEventDisplayState(event);
-                    return `
-                    <div class="event-card ${state.cardClass}">
-                        <div class="event-badge ${state.badgeClass}">${state.label}</div>
-                        <div class="event-body">
-                            <p class="event-date">${formatEventDateTime(event)}</p>
-                            <h3 class="event-name">${event.name}</h3>
-                            ${event.description ? `<p class="event-desc">${event.description}</p>` : ''}
-                        </div>
-                        <div class="event-world">Мир: <span>${event.world || 'Загадка'}</span></div>
-                    </div>
-                    `;
-                }).join('');
+                regularContainer.replaceChildren(...events.map(event => createEventCard(event)));
             } else {
-                regularContainer.innerHTML = '<p class="events-empty">Пока нет запланированных ивентов</p>';
+                const emptyMessage = document.createElement('p');
+                emptyMessage.className = 'events-empty';
+                emptyMessage.textContent = 'Пока нет запланированных ивентов';
+                regularContainer.replaceChildren(emptyMessage);
             }
         }
 
@@ -248,7 +292,12 @@ async function loadVRChatData() {
     } catch (err) {
         console.warn('Не удалось загрузить vrchat.json:', err);
         const regularContainer = document.getElementById('regularEvents');
-        if (regularContainer) regularContainer.innerHTML = '<p class="events-empty">Данные недоступны</p>';
+        if (regularContainer) {
+            const errorMessage = document.createElement('p');
+            errorMessage.className = 'events-empty';
+            errorMessage.textContent = 'Данные недоступны';
+            regularContainer.replaceChildren(errorMessage);
+        }
     }
 }
 
