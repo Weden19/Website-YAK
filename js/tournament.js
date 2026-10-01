@@ -1,4 +1,4 @@
-const GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwbIeruQQ4WD7wqdhN8oGkRWITVBxiP-trugEa777ckikSJQL2Ukcc_9kRPma9ytrLnAg/exec';
+const GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwlESkcVPWzDCn_2C1cnUKoJF45P1Dvaxv1b2sM2Syd9Xtp0kg3eY8370mO0FPRrxRgpw/exec';
 
 document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('tournamentRegistrationForm');
@@ -35,7 +35,9 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     window.addEventListener('message', event => {
-        if (event.source !== frame.contentWindow || !pendingNonce) return;
+        const isGoogleScriptOrigin = event.origin === 'https://script.google.com'
+            || (event.origin.startsWith('https://') && event.origin.endsWith('.googleusercontent.com'));
+        if (!isGoogleScriptOrigin || !pendingNonce) return;
         if (!event.data || event.data.type !== 'tournament-registration' || event.data.nonce !== pendingNonce) return;
 
         window.clearTimeout(timeoutId);

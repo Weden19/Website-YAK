@@ -62,7 +62,7 @@ function response_(nonce, success) {
     success: success,
   });
   return HtmlService.createHtmlOutput(
-    '<!doctype html><html><body><script>window.parent.postMessage('
+    '<!doctype html><html><body><script>window.top.postMessage('
       + result
       + ', "*");</script></body></html>'
   ).setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
