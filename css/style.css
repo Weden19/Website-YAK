@@ -1239,6 +1239,14 @@ body {
   transform: translateX(-50%) translateY(0);
 }
 
+.rank-node.tip-right::after {
+  left: auto;
+  right: 0;
+  transform: translateY(6px);
+}
+.rank-node.tip-right:hover::after,
+.rank-node.tip-right:focus-visible::after { transform: translateY(0); }
+
 .rank-node-note {
   display: block;
   font-size: 10.5px;
@@ -1406,12 +1414,15 @@ body {
   .rank-node:hover::after,
   .rank-node:focus-visible::after { transform: translateX(0) translateY(0); }
 
-  .rank-flight-grid { grid-template-columns: 1fr !important; }
+  .rank-forks { gap: 24px; }
+}
+
+/* Лётная цепочка из 11 колонок не влезает уже на ~970px — раскладываем вертикально */
+@media (max-width: 1024px) {
+  .rank-flight-grid { grid-template-columns: 1fr !important; justify-items: start; }
   .rank-flight-grid > .rank-node,
   .rank-flight-grid > .rank-flight-bracket,
   .rank-flight-grid > .rank-flight-instructor { grid-column: 1 !important; }
   .rank-flight-grid > .rank-arrow { grid-column: 1 !important; transform: rotate(90deg); }
   .rank-flight-bracket { display: none; }
-
-  .rank-forks { gap: 24px; }
 }
