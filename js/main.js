@@ -33,6 +33,8 @@ async function fetchSheet(sheetName) {
 }
 
 // ===== ФОРМАТИРОВАНИЕ ВРЕМЕНИ ИВЕНТОВ =====
+const EVENT_DURATION_MS = 60 * 60 * 1000;
+
 function parseEventDateTime(event) {
     if (!event) return null;
 
@@ -102,7 +104,7 @@ function getEventDisplayState(event, now = new Date()) {
     }
 
     const startTime = new Date(start.getTime());
-    const endTime = new Date(startTime.getTime() + 60 * 60 * 1000);
+    const endTime = new Date(startTime.getTime() + EVENT_DURATION_MS);
 
     if (now >= startTime && now <= endTime) {
         return { label: 'Проходит', badgeClass: 'event-badge-active', cardClass: 'event-upcoming' };
@@ -198,7 +200,8 @@ function getRegularEventsForDisplay(data, now = new Date()) {
         .filter(event => event._parsedDate)
         .sort((a, b) => a._parsedDate - b._parsedDate);
 
-    const futureEvents = parsedEvents.filter(event => event._parsedDate >= now);
+    // Ивент остаётся в списке, пока идёт (длительность — как в getEventDisplayState)
+    const futureEvents = parsedEvents.filter(event => event._parsedDate.getTime() + EVENT_DURATION_MS > now.getTime());
     if (!futureEvents.length) return [];
 
     const currentWeekStart = getStartOfWeek(now);

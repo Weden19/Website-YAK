@@ -214,6 +214,21 @@
   <script>
     function toggleMenu() { document.getElementById('mobileNav').classList.toggle('open'); }
     function closeMenu() { document.getElementById('mobileNav').classList.remove('open'); }
+
+    // Подсказки у правого края экрана прижимаем вправо, иначе страница получает горизонтальный скролл
+    function placeRankTips() {
+      const viewportWidth = document.documentElement.clientWidth;
+      const leftAnchored = window.matchMedia('(max-width: 640px)').matches;
+      document.querySelectorAll('.rank-node').forEach(node => {
+        node.classList.remove('tip-right');
+        const rect = node.getBoundingClientRect();
+        const tipWidth = parseFloat(getComputedStyle(node, '::after').width) || 0;
+        const tipRight = leftAnchored ? rect.left + tipWidth : rect.left + rect.width / 2 + tipWidth / 2;
+        if (tipRight > viewportWidth - 8) node.classList.add('tip-right');
+      });
+    }
+    window.addEventListener('load', placeRankTips);
+    window.addEventListener('resize', placeRankTips);
   </script>
 </body>
 </html>
