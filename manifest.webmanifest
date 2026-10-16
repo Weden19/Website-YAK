@@ -1,0 +1,16 @@
+{
+  "name": "Академия Яковлева",
+  "short_name": "Академия",
+  "description": "Авиационная группа Академии Яковлева в VRChat: расписание, правила, звания.",
+  "lang": "ru",
+  "start_url": "/main/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0e0e10",
+  "theme_color": "#0e0e10",
+  "icons": [
+    { "src": "/assets/icons/app/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/assets/icons/app/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/assets/icons/app/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

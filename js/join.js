@@ -24,7 +24,10 @@
             .sort((a, b) => a.start - b.start)[0];
         if (!next) return;
         const live = next.start.getTime() <= now;
-        el.textContent = `${live ? 'Идёт сейчас' : 'Ближайший'}: ${next.e.name} — ${next.e.date} в ${next.e.time} МСК`;
+        const en = document.documentElement.lang === 'en';
+        el.textContent = en
+            ? `${live ? 'Live now' : 'Next'}: ${next.e.name} — ${next.e.date} at ${next.e.time} MSK`
+            : `${live ? 'Идёт сейчас' : 'Ближайший'}: ${next.e.name} — ${next.e.date} в ${next.e.time} МСК`;
         el.hidden = false;
     } catch {
         // без ближайшего ивента шаг всё равно понятен

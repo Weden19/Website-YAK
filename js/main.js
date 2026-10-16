@@ -1,3 +1,42 @@
+// ===== ЯЗЫК =====
+const LANG = document.documentElement.lang === 'en' ? 'en' : 'ru';
+const I18N = {
+    ru: {
+        locale: 'ru-RU',
+        soon: 'Скоро', live: 'Проходит', past: 'Прошёл',
+        world: 'Мир: ', worldLink: 'Ссылка на мир', mystery: 'Загадка',
+        msk: 'МСК', yourTime: 'у вас',
+        noSpecial: 'Специальных ивентов пока нет', loadError: 'Ошибка загрузки',
+        noEvents: 'Пока нет запланированных ивентов', noData: 'Данные недоступны',
+        noPhotos: 'Фото появятся после первого ивента',
+        photo: n => `Фото с ивента ${n}`, photoDot: n => `Фото ${n}`, slideOf: (n, t) => `${n} из ${t}`, slide: 'слайд',
+        updated: ago => `Данные из VRChat обновлены ${ago}`,
+        justNow: 'только что', minAgo: n => `${n} мин назад`, hAgo: n => `${n} ч назад`, dAgo: n => `${n} дн назад`,
+        until: name => `До события «${name}»`, liveNow: name => `${name} — идёт сейчас`,
+        liveWorld: (world, users) => `Мир: ${world}${users ? ` · в инстансе ${users} чел.` : ''}`,
+        join: 'Присоединиться', openGroup: 'Открыть группу VRChat',
+        units: { d: 'д', h: 'ч', m: 'мин', s: 'с' },
+    },
+    en: {
+        locale: 'en-GB',
+        soon: 'Upcoming', live: 'Live', past: 'Finished',
+        world: 'World: ', worldLink: 'World link', mystery: 'Mystery',
+        msk: 'MSK', yourTime: 'your time',
+        noSpecial: 'No special events yet', loadError: 'Failed to load',
+        noEvents: 'No events scheduled yet', noData: 'Data unavailable',
+        noPhotos: 'Photos will appear after the first event',
+        photo: n => `Event photo ${n}`, photoDot: n => `Photo ${n}`, slideOf: (n, t) => `${n} of ${t}`, slide: 'slide',
+        updated: ago => `VRChat data updated ${ago}`,
+        justNow: 'just now', minAgo: n => `${n} min ago`, hAgo: n => `${n} h ago`, dAgo: n => `${n} d ago`,
+        until: name => `Until “${name}”`, liveNow: name => `${name} — live now`,
+        liveWorld: (world, users) => `World: ${world}${users ? ` · ${users} in the instance` : ''}`,
+        join: 'Join', openGroup: 'Open VRChat group',
+        units: { d: 'd', h: 'h', m: 'min', s: 's' },
+    },
+};
+const T = I18N[LANG];
+const VRCHAT_GROUP_URL = 'https://vrchat.com/home/group/grp_629eb128-47c7-40c5-848b-c0b8cb8e8a7a';
+
 // ===== КОНФИГ =====
 const SHEET_ID = '1x6L5vMbK3nu68oUATruuKS3aPyBobaneE8m9p6r4vvE';
 function sheetUrl(sheetName) {
@@ -74,13 +113,13 @@ function formatEventDateTime(event) {
     const timeOpts = { hour: '2-digit', minute: '2-digit' };
     const mskDate = start.toLocaleDateString('ru-RU', { ...dateOpts, timeZone: MSK_TZ });
     const mskTime = start.toLocaleTimeString('ru-RU', { ...timeOpts, timeZone: MSK_TZ });
-    let text = `${mskDate} · ${mskTime} МСК`;
+    let text = `${mskDate} · ${mskTime} ${T.msk}`;
 
     // Если у зрителя другой часовой пояс — подсказываем его время
     const localDate = start.toLocaleDateString('ru-RU', dateOpts);
     const localTime = start.toLocaleTimeString('ru-RU', timeOpts);
     if (localTime !== mskTime || localDate !== mskDate) {
-        text += localDate === mskDate ? ` (у вас ${localTime})` : ` (у вас ${localDate.slice(0, 5)} ${localTime})`;
+        text += localDate === mskDate ? ` (${T.yourTime} ${localTime})` : ` (${T.yourTime} ${localDate.slice(0, 5)} ${localTime})`;
     }
     return text;
 }
@@ -100,24 +139,24 @@ function isSameWeek(date, weekStart) {
 function getEventDisplayState(event, now = new Date()) {
     const start = parseEventDateTime(event);
     if (!start) {
-        return { label: 'Скоро', badgeClass: '', cardClass: 'event-upcoming' };
+        return { label: T.soon, badgeClass: '', cardClass: 'event-upcoming' };
     }
 
     const startTime = new Date(start.getTime());
     const endTime = new Date(startTime.getTime() + EVENT_DURATION_MS);
 
     if (now >= startTime && now <= endTime) {
-        return { label: 'Проходит', badgeClass: 'event-badge-active', cardClass: 'event-upcoming' };
+        return { label: T.live, badgeClass: 'event-badge-active', cardClass: 'event-upcoming' };
     }
 
     if (now < startTime) {
-        return { label: 'Скоро', badgeClass: '', cardClass: 'event-upcoming' };
+        return { label: T.soon, badgeClass: '', cardClass: 'event-upcoming' };
     }
 
-    return { label: 'Прошёл', badgeClass: 'event-badge-past', cardClass: '' };
+    return { label: T.past, badgeClass: 'event-badge-past', cardClass: '' };
 }
 
-function createEventCard(event, { linkWorld = false, showEmptyDescription = false } = {}) {
+function createEventCard(event, { linkWorld = false, showEmptyDescription = false, liveUrl = null } = {}) {
     const state = getEventDisplayState(event);
     const card = document.createElement('div');
     card.className = `event-card ${state.cardClass}`;
@@ -150,12 +189,14 @@ function createEventCard(event, { linkWorld = false, showEmptyDescription = fals
 
     const world = document.createElement('div');
     world.className = 'event-world';
-    world.append('Мир: ');
-    const worldName = event?.world || 'Загадка';
+    world.append(T.world);
+    const worldName = event?.world || T.mystery;
     const worldHref = event?.world_link || event?.worldLink || event?.world_url
         || event?.worldUrl || event?.link || event?.url || '';
+    // Ссылку прячем под текст «Ссылка на мир» — название мира не нужно переводить
     let safeWorldUrl = null;
-    if (linkWorld && typeof worldHref === 'string') {
+    if (state.badgeClass === 'event-badge-active' && liveUrl) safeWorldUrl = liveUrl;
+    else if (linkWorld && typeof worldHref === 'string') {
         try {
             const url = new URL(worldHref);
             if (url.protocol === 'https:' || url.protocol === 'http:') safeWorldUrl = url.href;
@@ -171,7 +212,7 @@ function createEventCard(event, { linkWorld = false, showEmptyDescription = fals
         worldElement.target = '_blank';
         worldElement.rel = 'noopener noreferrer';
     }
-    worldElement.textContent = worldName;
+    worldElement.textContent = safeWorldUrl ? T.worldLink : worldName;
     world.appendChild(worldElement);
     card.appendChild(world);
 
@@ -239,7 +280,7 @@ async function loadSpecialEvents() {
         if (!rows.length) {
             const emptyMessage = document.createElement('p');
             emptyMessage.className = 'events-empty';
-            emptyMessage.textContent = 'Специальных ивентов пока нет';
+            emptyMessage.textContent = T.noSpecial;
             container.replaceChildren(emptyMessage);
             return;
         }
@@ -251,7 +292,7 @@ async function loadSpecialEvents() {
         if (container) {
             const errorMessage = document.createElement('p');
             errorMessage.className = 'events-empty';
-            errorMessage.textContent = 'Ошибка загрузки';
+            errorMessage.textContent = T.loadError;
             container.replaceChildren(errorMessage);
         }
         console.warn(e);
@@ -261,12 +302,12 @@ async function loadSpecialEvents() {
 // ===== «ДАННЫЕ ОБНОВЛЕНЫ N МИН НАЗАД» =====
 function formatAgo(date, now = new Date()) {
     const minutes = Math.max(0, Math.round((now - date) / 60000));
-    if (minutes < 1) return 'только что';
-    if (minutes < 60) return `${minutes} мин назад`;
+    if (minutes < 1) return T.justNow;
+    if (minutes < 60) return T.minAgo(minutes);
     const hours = Math.floor(minutes / 60);
-    if (hours < 24) return `${hours} ч назад`;
+    if (hours < 24) return T.hAgo(hours);
     const days = Math.floor(hours / 24);
-    return `${days} дн назад`;
+    return T.dAgo(days);
 }
 
 function renderUpdatedAt(updated) {
@@ -274,23 +315,76 @@ function renderUpdatedAt(updated) {
     const date = updated ? new Date(updated) : null;
     if (!el || !date || Number.isNaN(date.getTime())) return;
     const render = () => {
-        el.textContent = `Данные из VRChat обновлены ${formatAgo(date)}`;
-        el.title = date.toLocaleString('ru-RU', { timeZone: MSK_TZ }) + ' МСК';
+        el.textContent = T.updated(formatAgo(date));
+        el.title = date.toLocaleString(T.locale, { timeZone: MSK_TZ }) + ' ' + T.msk;
     };
     render();
     el.hidden = false;
     setInterval(render, 60000);
 }
 
+// ===== БАННЕР: ОТСЧЁТ ДО ИВЕНТА / «ИДЁТ СЕЙЧАС» =====
+function formatCountdown(ms) {
+    const total = Math.max(0, Math.floor(ms / 1000));
+    const d = Math.floor(total / 86400);
+    const h = Math.floor((total % 86400) / 3600);
+    const m = Math.floor((total % 3600) / 60);
+    const sec = total % 60;
+    const u = T.units;
+    if (d > 0) return `${d} ${u.d} ${h} ${u.h} ${m} ${u.m}`;
+    if (h > 0) return `${h} ${u.h} ${m} ${u.m}`;
+    return `${m} ${u.m} ${String(sec).padStart(2, '0')} ${u.s}`;
+}
+
+function initNextEventBanner(data, liveInstance) {
+    const banner = document.getElementById('nextEvent');
+    if (!banner) return;
+    const titleEl = banner.querySelector('.next-event-title');
+    const timerEl = banner.querySelector('.next-event-timer');
+    const metaEl = banner.querySelector('.next-event-meta');
+    const button = banner.querySelector('.next-event-btn');
+
+    const events = (Array.isArray(data?.events) ? data.events : [])
+        .map(e => ({ e, start: parseEventDateTime(e) }))
+        .filter(x => x.start)
+        .sort((a, b) => a.start - b.start);
+
+    let timer = null;
+    const render = () => {
+        const now = Date.now();
+        const next = events.find(x => x.start.getTime() + EVENT_DURATION_MS > now);
+        if (!next) { banner.hidden = true; clearInterval(timer); return; }
+        const isLive = next.start.getTime() <= now;
+        banner.hidden = false;
+        banner.classList.toggle('next-event--live', isLive);
+        if (isLive) {
+            titleEl.textContent = T.liveNow(next.e.name);
+            timerEl.textContent = '';
+            metaEl.textContent = liveInstance?.worldName ? T.liveWorld(liveInstance.worldName, liveInstance.users) : '';
+            button.textContent = liveInstance ? T.join : T.openGroup;
+            button.href = liveInstance ? liveInstance.url : VRCHAT_GROUP_URL;
+            button.hidden = false;
+        } else {
+            titleEl.textContent = T.until(next.e.name);
+            timerEl.textContent = formatCountdown(next.start.getTime() - now);
+            metaEl.textContent = formatEventDateTime(next.e);
+            button.hidden = true;
+        }
+    };
+    render();
+    timer = setInterval(render, 1000);
+}
+
 // ===== ДАННЫЕ ИЗ VRCHAT.JSON =====
 async function loadVRChatData() {
     try {
-        const dataUrl = new URL('../data/vrchat.json', window.location.href);
-        const res = await fetch(dataUrl);
+        const res = await fetch('/data/vrchat.json');
         if (!res.ok) throw new Error('Network error');
         const data = await res.json();
 
         renderUpdatedAt(data.updated);
+        const liveInstance = Array.isArray(data.live) && data.live.length ? data.live[0] : null;
+        initNextEventBanner(data, liveInstance);
 
         // Участники
         const membersEl = document.getElementById('stat-members');
@@ -301,11 +395,11 @@ async function loadVRChatData() {
         if (regularContainer) {
             const events = getRegularEventsForDisplay(data);
             if (events.length) {
-                regularContainer.replaceChildren(...events.map(event => createEventCard(event)));
+                regularContainer.replaceChildren(...events.map(event => createEventCard(event, { liveUrl: liveInstance?.url })));
             } else {
                 const emptyMessage = document.createElement('p');
                 emptyMessage.className = 'events-empty';
-                emptyMessage.textContent = 'Пока нет запланированных ивентов';
+                emptyMessage.textContent = T.noEvents;
                 regularContainer.replaceChildren(emptyMessage);
             }
         }
@@ -315,7 +409,7 @@ async function loadVRChatData() {
             initSlider(data.gallery);
         } else {
             const viewport = document.getElementById('sliderViewport');
-            if (viewport) viewport.innerHTML = '<div class="slider-placeholder">Фото появятся после первого ивента</div>';
+            if (viewport) viewport.innerHTML = `<div class="slider-placeholder">${T.noPhotos}</div>`;
         }
     } catch (err) {
         console.warn('Не удалось загрузить vrchat.json:', err);
@@ -323,7 +417,7 @@ async function loadVRChatData() {
         if (regularContainer) {
             const errorMessage = document.createElement('p');
             errorMessage.className = 'events-empty';
-            errorMessage.textContent = 'Данные недоступны';
+            errorMessage.textContent = T.noData;
             regularContainer.replaceChildren(errorMessage);
         }
     }
@@ -358,12 +452,12 @@ function initSlider(images) {
         slide.className = 'slider-slide' + (i === 0 ? ' active' : '');
         slide.dataset.index = i;
         slide.setAttribute('role', 'group');
-        slide.setAttribute('aria-roledescription', 'слайд');
-        slide.setAttribute('aria-label', `${i + 1} из ${images.length}`);
+        slide.setAttribute('aria-roledescription', T.slide);
+        slide.setAttribute('aria-label', T.slideOf(i + 1, images.length));
 
         const img = document.createElement('img');
         img.src = url;
-        img.alt = `Фото с ивента ${i + 1}`;
+        img.alt = T.photo(i + 1);
         img.loading = i < 2 ? 'eager' : 'lazy';
         img.referrerPolicy = 'no-referrer';
         img.addEventListener('click', () => openLightbox(i));
@@ -375,7 +469,7 @@ function initSlider(images) {
             const dot = document.createElement('button');
             dot.type = 'button';
             dot.className = 'slider-dot' + (i === 0 ? ' active' : '');
-            dot.setAttribute('aria-label', `Фото ${i + 1}`);
+            dot.setAttribute('aria-label', T.photoDot(i + 1));
             dot.onclick = () => { goToSlide(i); startAutoPlay(); };
             dotsContainer.appendChild(dot);
         }
@@ -452,7 +546,7 @@ function renderLightbox() {
     const counter = document.getElementById('lightboxCounter');
     const total = sliderState.images.length;
     img.src = sliderState.images[lightboxState.index];
-    img.alt = `Фото с ивента ${lightboxState.index + 1}`;
+    img.alt = T.photo(lightboxState.index + 1);
     counter.textContent = `${lightboxState.index + 1} / ${total}`;
 }
 
