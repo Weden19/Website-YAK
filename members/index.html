@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Для участников — Академия Яковлева</title>
-  <meta name="description" content="Правила аватаров, методические материалы и полезные файлы для участников Академии Яковлева.">
+  <meta name="description" content="Система званий, правила служебных аватаров и полезные файлы для участников Академии Яковлева.">
   <link rel="canonical" href="https://yakovlev-academy.ru/members/">
   <link rel="icon" type="image/png" href="/assets/logo.png">
 
@@ -13,15 +13,15 @@
   <meta property="og:url" content="https://yakovlev-academy.ru/members/">
   <meta property="og:site_name" content="Академия Яковлева">
   <meta property="og:title" content="Для участников — Академия Яковлева">
-  <meta property="og:description" content="Правила аватаров, методические материалы и полезные файлы для участников Академии Яковлева.">
-  <meta property="og:image" content="https://yakovlev-academy.ru/assets/hero-bg.jpg">
-  <meta property="og:image:width" content="1756">
-  <meta property="og:image:height" content="896">
+  <meta property="og:description" content="Система званий, правила служебных аватаров и полезные файлы для участников Академии Яковлева.">
+  <meta property="og:image" content="https://yakovlev-academy.ru/assets/og-image.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
 
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Для участников — Академия Яковлева">
-  <meta name="twitter:description" content="Правила аватаров, методические материалы и полезные файлы для участников Академии Яковлева.">
-  <meta name="twitter:image" content="https://yakovlev-academy.ru/assets/hero-bg.jpg">
+  <meta name="twitter:description" content="Система званий, правила служебных аватаров и полезные файлы для участников Академии Яковлева.">
+  <meta name="twitter:image" content="https://yakovlev-academy.ru/assets/og-image.jpg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap">
   <link rel="stylesheet" href="/css/style.css">
@@ -41,25 +41,27 @@
 
   <header class="site-header">
     <div class="container">
-      <a href="/main" class="logo">
-        <img src="/assets/logo.png" alt="Логотип" class="logo-img">
+      <a href="/main" class="logo" aria-label="Академия Яковлева — на главную">
+        <img src="/assets/logo.png" alt="" class="logo-img">
         <span class="logo-text">АКАДЕМИЯ ЯКОВЛЕВА</span>
       </a>
-      <nav class="nav">
+      <nav class="nav" aria-label="Основное меню">
         <a href="/main" class="nav-link">← Главная</a>
         <a href="/rules" class="nav-link">Правила</a>
-        <a href="/members" class="nav-link" style="color:var(--text-primary)">Для участников</a>
+        <a href="/members" class="nav-link">Для участников</a>
+        <a href="/join" class="nav-link">Как вступить</a>
       </nav>
-      <button class="burger" aria-label="Меню" onclick="toggleMenu()">
+      <button class="burger" type="button" aria-label="Меню" aria-controls="mobileNav" aria-expanded="false">
         <span></span><span></span><span></span>
       </button>
     </div>
   </header>
 
-  <nav class="mobile-nav" id="mobileNav">
-    <a href="/main" onclick="closeMenu()">← Главная</a>
-    <a href="/rules" onclick="closeMenu()">Правила</a>
-    <a href="/members" onclick="closeMenu()">Для участников</a>
+  <nav class="mobile-nav" id="mobileNav" aria-label="Мобильное меню">
+    <a href="/main">← Главная</a>
+    <a href="/rules">Правила</a>
+    <a href="/members">Для участников</a>
+    <a href="/join">Как вступить</a>
   </nav>
 
   <main>
@@ -67,7 +69,7 @@
       <div class="container">
         <div class="hero-panel">
           <h1 class="hero-title" style="font-size: clamp(32px,5vw,52px)">Для участников</h1>
-          <p class="hero-desc">Система званий, правила служебных аватаров, важные файлы и методические материалы</p>
+          <p class="hero-desc">Система званий, правила служебных аватаров и полезные файлы</p>
         </div>
       </div>
     </section>
@@ -76,13 +78,13 @@
       <div class="container">
         <h2 class="section-title">Правила аватаров</h2>
         <p class="avatars-intro">Требования к оформлению служебных аватаров участников Академии Яковлева.</p>
-        <div class="rules-deck">
+        <div class="rules-deck" role="region" aria-roledescription="слайды" aria-label="Правила аватаров">
           <div class="rules-deck-viewport" id="rulesDeckViewport"></div>
           <div class="rules-deck-controls">
-            <button class="rules-nav-btn" id="rulesPrevBtn" onclick="rulesDeckPrev()" aria-label="Назад">‹</button>
+            <button class="rules-nav-btn" type="button" id="rulesPrevBtn" onclick="rulesDeckPrev()" aria-label="Назад">‹</button>
             <div class="rules-deck-dots" id="rulesDeckDots"></div>
             <span class="rules-deck-counter" id="rulesDeckCounter"></span>
-            <button class="rules-nav-btn" id="rulesNextBtn" onclick="rulesDeckNext()" aria-label="Вперёд">›</button>
+            <button class="rules-nav-btn" type="button" id="rulesNextBtn" onclick="rulesDeckNext()" aria-label="Вперёд">›</button>
           </div>
         </div>
       </div>
@@ -100,20 +102,20 @@
           <div class="rank-flight-grid">
             <div class="rank-node" style="grid-column:1" tabindex="0" data-desc="Ничего не умеет и ничего не знает.">Курсант<br>2-го класса</div>
             <span class="rank-arrow" style="grid-column:2">→</span>
-            <div class="rank-node" style="grid-column:3" tabindex="0" data-desc="Знает базовую теорию, умеет управлять самолётом, но не умеет вертолётом.">Курсант<br>1-ого класса</div>
+            <div class="rank-node" style="grid-column:3" tabindex="0" data-desc="Знает базовую теорию, умеет управлять самолётом, но не умеет вертолётом.">Курсант<br>1-го класса</div>
             <span class="rank-arrow" style="grid-column:4">→</span>
             <div class="rank-node" style="grid-column:5" tabindex="0" data-desc="Полноценный лётчик, сдавший экзамен.">Лётчик<br>(без классности)</div>
             <span class="rank-arrow" style="grid-column:6">→</span>
-            <div class="rank-node" style="grid-column:7" tabindex="0" data-desc="Владеет базовыми приёмами, умеет применять их в бою.">Лётчик<br>3-его класса</div>
+            <div class="rank-node" style="grid-column:7" tabindex="0" data-desc="Владеет базовыми приёмами, умеет применять их в бою.">Лётчик<br>3-го класса</div>
             <span class="rank-arrow" style="grid-column:8">→</span>
-            <div class="rank-node" style="grid-column:9" tabindex="0" data-desc="Серьёзный боевой лётчик, способен побеждать среднестатистических лётчиков.">Лётчик<br>2-ого класса</div>
+            <div class="rank-node" style="grid-column:9" tabindex="0" data-desc="Серьёзный боевой лётчик, способен побеждать среднестатистических лётчиков.">Лётчик<br>2-го класса</div>
             <span class="rank-arrow" style="grid-column:10">→</span>
-            <div class="rank-node" style="grid-column:11" tabindex="0" data-desc="Высшая лётная квалификация. Способен побеждать в бою лучших пилотов.">Лётчик<br>1-ого класса</div>
+            <div class="rank-node" style="grid-column:11" tabindex="0" data-desc="Высшая лётная квалификация. Способен побеждать в бою лучших пилотов.">Лётчик<br>1-го класса</div>
 
             <div class="rank-flight-bracket" style="grid-column:5/12"></div>
             <div class="rank-flight-instructor" style="grid-column:5/12">
               <div class="rank-bracket-connector"></div>
-              <div class="rank-node rank-node--dashed" tabindex="0" data-desc="Лётчик, способный обучать. Складывается с классностью. Доступно всем лётчикам — от «без классности» до 1-ого класса.">Инструктор<br><span class="rank-node-note">(доп. звание)</span></div>
+              <div class="rank-node rank-node--dashed" tabindex="0" data-desc="Лётчик, способный обучать. Складывается с классностью. Доступно всем лётчикам — от «без классности» до 1-го класса.">Инструктор<br><span class="rank-node-note">(доп. звание)</span></div>
             </div>
           </div>
         </div>
@@ -201,17 +203,16 @@
   <footer class="site-footer">
     <div class="container">
       <div class="footer-logo">
-        <img src="/assets/logo.png" alt="Логотип" class="logo-img">
+        <img src="/assets/logo.png" alt="" class="logo-img">
         <span class="logo-text">АКАДЕМИЯ ЯКОВЛЕВА</span>
       </div>
-      <p class="footer-copy">VRChat · © 2025</p>
+      <p class="footer-copy">VRChat · © <span class="js-year">2025</span></p>
     </div>
   </footer>
 
+  <script src="/js/site.js"></script>
   <script src="/js/rules-deck.js"></script>
   <script>
-    function toggleMenu() { document.getElementById('mobileNav').classList.toggle('open'); }
-    function closeMenu() { document.getElementById('mobileNav').classList.remove('open'); }
 
     // Подсказки у правого края экрана прижимаем вправо, иначе страница получает горизонтальный скролл
     function placeRankTips() {
@@ -225,6 +226,14 @@
         if (tipRight > viewportWidth - 8) node.classList.add('tip-right');
       });
     }
+    // Описание звания — ещё и скрытым текстом, чтобы его прочитал скринридер (::after он не видит)
+    document.querySelectorAll('.rank-node[data-desc]').forEach(node => {
+      const desc = document.createElement('span');
+      desc.className = 'sr-only';
+      desc.textContent = '. ' + node.dataset.desc;
+      node.appendChild(desc);
+    });
+
     window.addEventListener('load', placeRankTips);
     window.addEventListener('resize', placeRankTips);
   </script>

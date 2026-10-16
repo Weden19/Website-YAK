@@ -4,7 +4,7 @@ const RULES_SLIDES = [
     eyebrow: 'Академия Яковлева',
     title: 'Внешний вид служебных аватаров',
     blocks: [
-      { type: 'text', text: 'Руководство по оформлению аватаров. Листайте стрелками или точками внизу.' },
+      { type: 'text', text: 'Руководство по оформлению аватаров. Листайте свайпом или кнопками ‹ › внизу.' },
     ],
   },
   {
@@ -145,7 +145,7 @@ const RULES_SLIDES = [
       {
         type: 'cards',
         cards: [
-          { type: 'allowed', label: '✓ Разрешено', items: ['Фонари', 'Жезлы маршалла', 'Конструктивная подсветка роботов', 'Эффекты оружия'] },
+          { type: 'allowed', label: '✓ Разрешено', items: ['Фонари', 'Сигнальные жезлы', 'Конструктивная подсветка роботов', 'Эффекты оружия'] },
           { type: 'forbidden', label: '✕ Запрещено', items: ['Эффекты, перекрывающие обзор окружающим'] },
         ],
       },
@@ -258,12 +258,44 @@ function initRulesDeck() {
 
   if (dotsContainer) {
     dotsContainer.innerHTML = RULES_SLIDES.map((_, i) => `
-      <button class="rules-deck-dot${i === 0 ? ' active' : ''}" aria-label="Слайд ${i + 1}" onclick="goToRulesSlide(${i})"></button>
+      <button class="rules-deck-dot${i === 0 ? ' active' : ''}" type="button" aria-label="Слайд ${i + 1}"${i === 0 ? ' aria-current="true"' : ''} onclick="goToRulesSlide(${i})"></button>
     `).join('');
   }
 
-  if (counter) counter.textContent = `1 / ${rulesDeckState.total}`;
+  if (counter) {
+    counter.textContent = `1 / ${rulesDeckState.total}`;
+    counter.setAttribute('aria-live', 'polite');
+  }
   updateRulesNavButtons();
+  initRulesDeckGestures(viewport);
+}
+
+// Свайп по слайду и стрелки клавиатуры, когда фокус внутри колоды
+function initRulesDeckGestures(viewport) {
+  let startX = 0, startY = 0, tracking = false;
+  viewport.style.touchAction = 'pan-y';
+  viewport.addEventListener('touchstart', e => {
+    if (e.touches.length !== 1) { tracking = false; return; }
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+    tracking = true;
+  }, { passive: true });
+  viewport.addEventListener('touchend', e => {
+    if (!tracking) return;
+    tracking = false;
+    const dx = e.changedTouches[0].clientX - startX;
+    const dy = e.changedTouches[0].clientY - startY;
+    if (Math.abs(dx) < 40 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
+    goToRulesSlide(rulesDeckState.current + (dx < 0 ? 1 : -1));
+  }, { passive: true });
+
+  const deck = viewport.closest('.rules-deck');
+  if (deck) {
+    deck.addEventListener('keydown', e => {
+      if (e.key === 'ArrowRight') { e.preventDefault(); goToRulesSlide(rulesDeckState.current + 1); }
+      if (e.key === 'ArrowLeft') { e.preventDefault(); goToRulesSlide(rulesDeckState.current - 1); }
+    });
+  }
 }
 
 function goToRulesSlide(index) {
@@ -276,9 +308,11 @@ function goToRulesSlide(index) {
   const next = Math.max(0, Math.min(total - 1, index));
   slides[rulesDeckState.current]?.classList.remove('active');
   dots[rulesDeckState.current]?.classList.remove('active');
+  dots[rulesDeckState.current]?.removeAttribute('aria-current');
   rulesDeckState.current = next;
   slides[next]?.classList.add('active');
   dots[next]?.classList.add('active');
+  dots[next]?.setAttribute('aria-current', 'true');
   if (counter) counter.textContent = `${next + 1} / ${total}`;
   updateRulesNavButtons();
 }
