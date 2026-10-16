@@ -139,7 +139,7 @@ async function main() {
         try {
             const rawEvents = await fetchGroupCalendarEvents(headers);
 
-            const DEFAULT_DURATION_MS = 60 * 60 * 1000; // 1 час — совпадает с допущением в main.js (getEventDisplayState)
+            const DEFAULT_DURATION_MS = 2 * 60 * 60 * 1000; // 2 часа — совпадает с EVENT_DURATION_MS в main.js
 
             const parsed = rawEvents
                 .map(e => {

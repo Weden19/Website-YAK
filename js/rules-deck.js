@@ -114,15 +114,8 @@ const RULES_SLIDES = [
     eyebrow: '08',
     title: 'Общая схема размещения знаков',
     blocks: [
-      { type: 'text', text: 'Общий принцип, принятый в ВС РФ (Приказ МО РФ №300): рукав делится на общее и частное. Наша схема в Приказе №102-р следует той же логике.' },
-      {
-        type: 'imageRow',
-        images: [
-          { src: 'https://forma-odezhda.com/image/data/images/Dop/forma.jpg', alt: 'Схема размещения знаков на форме' },
-          { src: 'https://forma-odezhda.com/image/data/upload/stati/5656.jpeg', alt: 'Пример расположения шевронов' },
-        ],
-      },
-      { type: 'text', text: 'Источник: forma-odezhda.com – справочный материал, не документ Академии.' },
+      { type: 'text', text: 'Общий принцип, принятый в ВС РФ (Приказ МО РФ №300): рукав делится на общее и частное. Схема Академии следует той же логике.' },
+      { type: 'image', src: '/assets/rules/sleeve-scheme.svg', alt: 'Правый рукав: сверху шеврон Академии, под ним флаг ВКС или ВМФ. Левый рукав: флаг РФ, страны происхождения или исторического государства.', wide: true },
     ],
   },
   {
@@ -225,7 +218,7 @@ function renderRulesBlock(block) {
         </div>
       `).join('')}</div>`;
     case 'image':
-      return `<img class="rules-slide-img" src="${block.src}" alt="${block.alt}" loading="lazy">`;
+      return `<img class="rules-slide-img${block.wide ? ' rules-slide-img--wide' : ''}" src="${block.src}" alt="${block.alt}" loading="lazy">`;
     case 'imageRow':
       return `<div class="rules-slide-img-row">${block.images.map(i => `<img src="${i.src}" alt="${i.alt}" loading="lazy">`).join('')}</div>`;
     case 'link':

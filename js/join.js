@@ -3,7 +3,7 @@
     const el = document.getElementById('joinNextEvent');
     if (!el) return;
     const MSK_OFFSET_MS = 3 * 60 * 60 * 1000;
-    const DURATION_MS = 60 * 60 * 1000;
+    const DURATION_MS = 2 * 60 * 60 * 1000; // как в main.js
 
     function parse(event) {
         const d = /^(\d{2})\.(\d{2})\.(\d{4})$/.exec(event?.date || '');
