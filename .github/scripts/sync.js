@@ -211,6 +211,21 @@ async function main() {
             gallery,
             updated: new Date().toISOString(),
         };
+
+        // Если кроме времени обновления ничего не поменялось — файл не трогаем,
+        // иначе каждый прогон даёт пустой коммит и пересборку сайта
+        let previous = null;
+        try {
+            previous = JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
+        } catch {
+            previous = null;
+        }
+        const withoutUpdated = ({ updated, ...rest }) => JSON.stringify(rest);
+        if (previous && withoutUpdated(previous) === withoutUpdated(data)) {
+            console.log('No changes in VRChat data, vrchat.json left as is');
+            return;
+        }
+
         fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
         console.log('Data saved to vrchat.json');
 

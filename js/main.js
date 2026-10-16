@@ -34,6 +34,8 @@ async function fetchSheet(sheetName) {
 
 // ===== ФОРМАТИРОВАНИЕ ВРЕМЕНИ ИВЕНТОВ =====
 const EVENT_DURATION_MS = 60 * 60 * 1000;
+const MSK_TZ = 'Europe/Moscow';
+const MSK_OFFSET_MS = 3 * 60 * 60 * 1000; // в России нет перехода на летнее время
 
 function parseEventDateTime(event) {
     if (!event) return null;
@@ -46,8 +48,7 @@ function parseEventDateTime(event) {
         const [hours = 0, minutes = 0] = typeof timeValue === 'string' && timeValue.includes(':')
             ? timeValue.split(':').map(Number)
             : [0, 0];
-        const moscowOffsetMs = 3 * 60 * 60 * 1000;
-        return new Date(Date.UTC(year, month - 1, day, hours, minutes) - moscowOffsetMs);
+        return new Date(Date.UTC(year, month - 1, day, hours, minutes) - MSK_OFFSET_MS);
     }
 
     if (typeof dateValue === 'string' && dateValue.includes('T')) {
@@ -56,7 +57,7 @@ function parseEventDateTime(event) {
     }
 
     if (typeof dateValue === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(dateValue)) {
-        const parsed = new Date(`${dateValue}T${timeValue || '00:00'}`);
+        const parsed = new Date(`${dateValue}T${timeValue || '00:00'}:00+03:00`);
         if (!Number.isNaN(parsed.getTime())) return parsed;
     }
 
@@ -69,32 +70,31 @@ function formatEventDateTime(event) {
         return event?.date ? `${event.date}${event.time ? ` · ${event.time}` : ''}` : '';
     }
 
-    const dateStr = start.toLocaleDateString('ru-RU', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric'
-    });
-    const timeStr = start.toLocaleTimeString('ru-RU', {
-        hour: '2-digit',
-        minute: '2-digit'
-    });
+    const dateOpts = { day: '2-digit', month: '2-digit', year: 'numeric' };
+    const timeOpts = { hour: '2-digit', minute: '2-digit' };
+    const mskDate = start.toLocaleDateString('ru-RU', { ...dateOpts, timeZone: MSK_TZ });
+    const mskTime = start.toLocaleTimeString('ru-RU', { ...timeOpts, timeZone: MSK_TZ });
+    let text = `${mskDate} · ${mskTime} МСК`;
 
-    return `${dateStr} · ${timeStr}`;
+    // Если у зрителя другой часовой пояс — подсказываем его время
+    const localDate = start.toLocaleDateString('ru-RU', dateOpts);
+    const localTime = start.toLocaleTimeString('ru-RU', timeOpts);
+    if (localTime !== mskTime || localDate !== mskDate) {
+        text += localDate === mskDate ? ` (у вас ${localTime})` : ` (у вас ${localDate.slice(0, 5)} ${localTime})`;
+    }
+    return text;
 }
 
+// Неделя считается по московскому времени: понедельник 00:00 МСК
 function getStartOfWeek(date) {
-    const copy = new Date(date);
-    const day = copy.getDay() || 7;
-    copy.setHours(0, 0, 0, 0);
-    copy.setDate(copy.getDate() - day + 1);
-    return copy;
+    const msk = new Date(date.getTime() + MSK_OFFSET_MS);
+    const weekday = msk.getUTCDay() || 7;
+    const monday = Date.UTC(msk.getUTCFullYear(), msk.getUTCMonth(), msk.getUTCDate() - (weekday - 1));
+    return new Date(monday - MSK_OFFSET_MS);
 }
 
 function isSameWeek(date, weekStart) {
-    const candidate = getStartOfWeek(date);
-    return candidate.getFullYear() === weekStart.getFullYear()
-        && candidate.getMonth() === weekStart.getMonth()
-        && candidate.getDate() === weekStart.getDate();
+    return getStartOfWeek(date).getTime() === weekStart.getTime();
 }
 
 function getEventDisplayState(event, now = new Date()) {
@@ -208,10 +208,9 @@ function getRegularEventsForDisplay(data, now = new Date()) {
     const currentWeekEvents = futureEvents.filter(event => isSameWeek(event._parsedDate, currentWeekStart));
     if (currentWeekEvents.length) return currentWeekEvents;
 
-    const nextWeekStart = new Date(currentWeekStart);
-    nextWeekStart.setDate(nextWeekStart.getDate() + 7);
-    const nextWeekEnd = new Date(nextWeekStart);
-    nextWeekEnd.setDate(nextWeekEnd.getDate() + 7);
+    const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
+    const nextWeekStart = new Date(currentWeekStart.getTime() + WEEK_MS);
+    const nextWeekEnd = new Date(nextWeekStart.getTime() + WEEK_MS);
 
     const nextWeekEvents = futureEvents.filter(event => event._parsedDate >= nextWeekStart && event._parsedDate < nextWeekEnd);
     if (nextWeekEvents.length) return nextWeekEvents;
@@ -259,6 +258,30 @@ async function loadSpecialEvents() {
     }
 }
 
+// ===== «ДАННЫЕ ОБНОВЛЕНЫ N МИН НАЗАД» =====
+function formatAgo(date, now = new Date()) {
+    const minutes = Math.max(0, Math.round((now - date) / 60000));
+    if (minutes < 1) return 'только что';
+    if (minutes < 60) return `${minutes} мин назад`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours} ч назад`;
+    const days = Math.floor(hours / 24);
+    return `${days} дн назад`;
+}
+
+function renderUpdatedAt(updated) {
+    const el = document.getElementById('eventsUpdated');
+    const date = updated ? new Date(updated) : null;
+    if (!el || !date || Number.isNaN(date.getTime())) return;
+    const render = () => {
+        el.textContent = `Данные из VRChat обновлены ${formatAgo(date)}`;
+        el.title = date.toLocaleString('ru-RU', { timeZone: MSK_TZ }) + ' МСК';
+    };
+    render();
+    el.hidden = false;
+    setInterval(render, 60000);
+}
+
 // ===== ДАННЫЕ ИЗ VRCHAT.JSON =====
 async function loadVRChatData() {
     try {
@@ -266,6 +289,8 @@ async function loadVRChatData() {
         const res = await fetch(dataUrl);
         if (!res.ok) throw new Error('Network error');
         const data = await res.json();
+
+        renderUpdatedAt(data.updated);
 
         // Участники
         const membersEl = document.getElementById('stat-members');
@@ -305,10 +330,13 @@ async function loadVRChatData() {
 }
 
 // ===== СЛАЙДЕР =====
+const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
 const sliderState = {
     images: [],
     current: 0,
     timer: null,
+    hovered: false,
     SLIDE_DURATION: 5000,
 };
 
@@ -329,27 +357,33 @@ function initSlider(images) {
         const slide = document.createElement('div');
         slide.className = 'slider-slide' + (i === 0 ? ' active' : '');
         slide.dataset.index = i;
+        slide.setAttribute('role', 'group');
+        slide.setAttribute('aria-roledescription', 'слайд');
+        slide.setAttribute('aria-label', `${i + 1} из ${images.length}`);
 
         const img = document.createElement('img');
         img.src = url;
-        img.alt = `Фото ${i + 1}`;
+        img.alt = `Фото с ивента ${i + 1}`;
         img.loading = i < 2 ? 'eager' : 'lazy';
         img.referrerPolicy = 'no-referrer';
-        
+        img.addEventListener('click', () => openLightbox(i));
+
         slide.appendChild(img);
         viewport.appendChild(slide);
 
         if (dotsContainer) {
             const dot = document.createElement('button');
+            dot.type = 'button';
             dot.className = 'slider-dot' + (i === 0 ? ' active' : '');
-            dot.setAttribute('aria-label', `Слайд ${i + 1}`);
-            dot.onclick = () => goToSlide(i);
+            dot.setAttribute('aria-label', `Фото ${i + 1}`);
+            dot.onclick = () => { goToSlide(i); startAutoPlay(); };
             dotsContainer.appendChild(dot);
         }
     });
 
     if (totalEl) totalEl.textContent = images.length;
     if (currentEl) currentEl.textContent = 1;
+    viewport.classList.add('slider-viewport--ready');
     startAutoPlay();
 }
 
@@ -364,17 +398,22 @@ function goToSlide(index) {
 
     slides[sliderState.current]?.classList.remove('active');
     dots[sliderState.current]?.classList.remove('active');
+    dots[sliderState.current]?.removeAttribute('aria-current');
 
     sliderState.current = next;
 
     slides[next]?.classList.add('active');
     dots[next]?.classList.add('active');
+    dots[next]?.setAttribute('aria-current', 'true');
 
     if (currentEl) currentEl.textContent = next + 1;
 }
 
+// Автопрокрутка: не крутим при «уменьшить движение», под курсором, в фоновой вкладке и при открытом просмотре
 function startAutoPlay() {
     stopAutoPlay();
+    if (sliderState.images.length < 2 || reducedMotion.matches || sliderState.hovered
+        || document.hidden || lightboxState.open) return;
     sliderState.timer = setInterval(() => goToSlide(sliderState.current + 1), sliderState.SLIDE_DURATION);
 }
 
@@ -384,6 +423,87 @@ function stopAutoPlay() {
 
 window.sliderNext = function() { goToSlide(sliderState.current + 1); startAutoPlay(); };
 window.sliderPrev = function() { goToSlide(sliderState.current - 1); startAutoPlay(); };
+
+// ===== СВАЙП =====
+// Горизонтальный свайп (а не вертикальный скролл страницы) → onLeft / onRight
+function addSwipe(element, onLeft, onRight) {
+    let startX = 0, startY = 0, tracking = false;
+    element.addEventListener('touchstart', e => {
+        if (e.touches.length !== 1) { tracking = false; return; }
+        startX = e.touches[0].clientX;
+        startY = e.touches[0].clientY;
+        tracking = true;
+    }, { passive: true });
+    element.addEventListener('touchend', e => {
+        if (!tracking) return;
+        tracking = false;
+        const dx = e.changedTouches[0].clientX - startX;
+        const dy = e.changedTouches[0].clientY - startY;
+        if (Math.abs(dx) < 40 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
+        if (dx < 0) onLeft(); else onRight();
+    }, { passive: true });
+}
+
+// ===== ПОЛНОЭКРАННЫЙ ПРОСМОТР =====
+const lightboxState = { open: false, index: 0, returnFocus: null };
+
+function renderLightbox() {
+    const img = document.getElementById('lightboxImg');
+    const counter = document.getElementById('lightboxCounter');
+    const total = sliderState.images.length;
+    img.src = sliderState.images[lightboxState.index];
+    img.alt = `Фото с ивента ${lightboxState.index + 1}`;
+    counter.textContent = `${lightboxState.index + 1} / ${total}`;
+}
+
+function openLightbox(index) {
+    const box = document.getElementById('lightbox');
+    if (!box || !sliderState.images.length) return;
+    lightboxState.open = true;
+    lightboxState.index = index;
+    lightboxState.returnFocus = document.activeElement;
+    renderLightbox();
+    box.hidden = false;
+    document.body.classList.add('no-scroll');
+    stopAutoPlay();
+    document.getElementById('lightboxClose').focus();
+}
+
+function closeLightbox() {
+    const box = document.getElementById('lightbox');
+    if (!box || !lightboxState.open) return;
+    lightboxState.open = false;
+    box.hidden = true;
+    document.body.classList.remove('no-scroll');
+    goToSlide(lightboxState.index);
+    lightboxState.returnFocus?.focus?.();
+    startAutoPlay();
+}
+
+function stepLightbox(delta) {
+    const total = sliderState.images.length;
+    lightboxState.index = ((lightboxState.index + delta) % total + total) % total;
+    renderLightbox();
+}
+
+function initLightbox() {
+    const box = document.getElementById('lightbox');
+    if (!box) return;
+    document.getElementById('lightboxClose').addEventListener('click', closeLightbox);
+    document.getElementById('lightboxPrev').addEventListener('click', () => stepLightbox(-1));
+    document.getElementById('lightboxNext').addEventListener('click', () => stepLightbox(1));
+    box.addEventListener('click', e => { if (e.target === box) closeLightbox(); });
+    addSwipe(box, () => stepLightbox(1), () => stepLightbox(-1));
+
+    // Фокус не уходит из окна просмотра
+    box.addEventListener('keydown', e => {
+        if (e.key !== 'Tab') return;
+        const buttons = [...box.querySelectorAll('button')];
+        const first = buttons[0], last = buttons[buttons.length - 1];
+        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    });
+}
 
 // ===== АВАТАРКИ =====
 function initAvatars() {
@@ -400,29 +520,36 @@ function initAvatars() {
     });
 }
 
-// ===== МОБИЛЬНОЕ МЕНЮ =====
-window.toggleMenu = function() {
-    document.getElementById('mobileNav')?.classList.toggle('open');
-};
-window.closeMenu = function() {
-    document.getElementById('mobileNav')?.classList.remove('open');
-};
-
 // ===== ИНИЦИАЛИЗАЦИЯ =====
 document.addEventListener('DOMContentLoaded', () => {
     initAvatars();
+    initLightbox();
     loadStats();
     loadVRChatData();
     loadSpecialEvents();
 
-    const slider = document.querySelector('.slider');
+    const slider = document.getElementById('slider');
     if (slider) {
-        slider.addEventListener('mouseenter', stopAutoPlay);
-        slider.addEventListener('mouseleave', startAutoPlay);
+        slider.addEventListener('mouseenter', () => { sliderState.hovered = true; stopAutoPlay(); });
+        slider.addEventListener('mouseleave', () => { sliderState.hovered = false; startAutoPlay(); });
+        // Пока фокус на кнопках слайдера — не листаем сами
+        slider.addEventListener('focusin', stopAutoPlay);
+        slider.addEventListener('focusout', startAutoPlay);
+        addSwipe(slider, window.sliderNext, window.sliderPrev);
     }
+
+    document.addEventListener('visibilitychange', () => (document.hidden ? stopAutoPlay() : startAutoPlay()));
+    reducedMotion.addEventListener?.('change', startAutoPlay);
 
     document.addEventListener('keydown', (e) => {
         if (!sliderState.images.length) return;
+        if (lightboxState.open) {
+            if (e.key === 'Escape') closeLightbox();
+            if (e.key === 'ArrowLeft') stepLightbox(-1);
+            if (e.key === 'ArrowRight') stepLightbox(1);
+            return;
+        }
+        if (e.target.closest?.('input, textarea, select, [contenteditable="true"]')) return;
         if (e.key === 'ArrowLeft') window.sliderPrev();
         if (e.key === 'ArrowRight') window.sliderNext();
     });

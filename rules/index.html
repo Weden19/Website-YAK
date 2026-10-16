@@ -24,25 +24,27 @@
 
   <header class="site-header">
     <div class="container">
-      <a href="/main" class="logo">
-        <img src="/assets/logo.png" alt="Логотип" class="logo-img">
+      <a href="/main" class="logo" aria-label="Академия Яковлева — на главную">
+        <img src="/assets/logo.png" alt="" class="logo-img">
         <span class="logo-text">АКАДЕМИЯ ЯКОВЛЕВА</span>
       </a>
-      <nav class="nav">
+      <nav class="nav" aria-label="Основное меню">
         <a href="/main" class="nav-link">← Главная</a>
-        <a href="/rules" class="nav-link" style="color:var(--text-primary)">Правила</a>
+        <a href="/rules" class="nav-link">Правила</a>
         <a href="/members" class="nav-link">Для участников</a>
+        <a href="/join" class="nav-link">Как вступить</a>
       </nav>
-      <button class="burger" aria-label="Меню" onclick="toggleMenu()">
+      <button class="burger" type="button" aria-label="Меню" aria-controls="mobileNav" aria-expanded="false">
         <span></span><span></span><span></span>
       </button>
     </div>
   </header>
 
-  <nav class="mobile-nav" id="mobileNav">
-    <a href="/main" onclick="closeMenu()">← Главная</a>
-    <a href="/rules" onclick="closeMenu()">Правила</a>
-    <a href="/members" onclick="closeMenu()">Для участников</a>
+  <nav class="mobile-nav" id="mobileNav" aria-label="Мобильное меню">
+    <a href="/main">← Главная</a>
+    <a href="/rules">Правила</a>
+    <a href="/members">Для участников</a>
+    <a href="/join">Как вступить</a>
   </nav>
 
   <main>
@@ -59,50 +61,51 @@
     <section class="section">
       <div class="container">
         <div class="rules-content">
+          <p class="rules-hint">Нажмите на номер пункта, чтобы скопировать ссылку на него.</p>
 
           <div class="rules-chapter">
             <h2 class="rules-chapter-title">1. Общие положения</h2>
             <ul class="rules-list">
-              <li><span class="rule-num">1.1</span> Незнание правил не освобождает от ответственности.</li>
-              <li><span class="rule-num">1.2</span> Участие в группе означает согласие с настоящими правилами.</li>
-              <li><span class="rule-num">1.3</span> Запрещена реклама сторонних проектов, серверов, сайтов и ресурсов без разрешения Администрации.</li>
-              <li><span class="rule-num">1.4</span> Административный Аппарат представлен людьми с ролью «Организационный состав».</li>
-              <li><span class="rule-num">1.5</span> Администрация вправе изменять правила в любое время без предварительного уведомления.</li>
-              <li><span class="rule-num">1.6</span> Администрация может применять к нарушителям наказания по своему усмотрению.</li>
-              <li><span class="rule-num">1.7</span> Администрация вправе наказывать группы (компании) за действия отдельных участников этих групп в целях предотвращения систематических нарушений членов компании нарушителя.</li>
-              <li><span class="rule-num">1.8</span> Все решения Администрации конечны и подлежат рассмотрению только в крайних случаях.</li>
+              <li id="1.1"><a class="rule-num" href="#1.1" aria-label="Ссылка на пункт 1.1">1.1</a> Незнание правил не освобождает от ответственности.</li>
+              <li id="1.2"><a class="rule-num" href="#1.2" aria-label="Ссылка на пункт 1.2">1.2</a> Участие в группе означает согласие с настоящими правилами.</li>
+              <li id="1.3"><a class="rule-num" href="#1.3" aria-label="Ссылка на пункт 1.3">1.3</a> Запрещена реклама сторонних проектов, серверов, сайтов и ресурсов без разрешения Администрации.</li>
+              <li id="1.4"><a class="rule-num" href="#1.4" aria-label="Ссылка на пункт 1.4">1.4</a> Административный Аппарат представлен людьми с ролью «Организационный состав».</li>
+              <li id="1.5"><a class="rule-num" href="#1.5" aria-label="Ссылка на пункт 1.5">1.5</a> Администрация вправе изменять правила в любое время без предварительного уведомления.</li>
+              <li id="1.6"><a class="rule-num" href="#1.6" aria-label="Ссылка на пункт 1.6">1.6</a> Администрация может применять к нарушителям наказания по своему усмотрению.</li>
+              <li id="1.7"><a class="rule-num" href="#1.7" aria-label="Ссылка на пункт 1.7">1.7</a> Администрация вправе наказывать группы (компании) за действия отдельных участников этих групп в целях предотвращения систематических нарушений членов компании нарушителя.</li>
+              <li id="1.8"><a class="rule-num" href="#1.8" aria-label="Ссылка на пункт 1.8">1.8</a> Все решения Администрации конечны и подлежат рассмотрению только в крайних случаях.</li>
             </ul>
           </div>
 
           <div class="rules-chapter">
             <h2 class="rules-chapter-title">2. Правила общения</h2>
             <ul class="rules-list">
-              <li><span class="rule-num">2.1</span> Языками общения устанавливаются русский и английский языки.</li>
-              <li><span class="rule-num">2.3</span> Запрещается публиковать эротические, порнографические, излишне жестокие материалы.</li>
-              <li><span class="rule-num">2.5</span> Запрещено введение в заблуждение с негативным умыслом.</li>
-              <li><span class="rule-num">2.6</span> Запрещена публикация / рассылка материалов с вредоносным ПО, если его существование было известно заранее.</li>
-              <li><span class="rule-num">2.7</span> Запрещено разглашение личной информации человека без его согласия.</li>
-              <li><span class="rule-num">2.8</span> Запрещена пропаганда экстремизма и публикация экстремистских материалов.</li>
-              <li><span class="rule-num">2.9</span> Запрещена пропаганда и демонстрация нацистской (фашистской) символики, в том числе полка «Азов», «Кракен», 3-й ОШБ, РДК, «Полка Кастуся Калиновского», ЛСР и подобных.</li>
+              <li id="2.1"><a class="rule-num" href="#2.1" aria-label="Ссылка на пункт 2.1">2.1</a> Языками общения устанавливаются русский и английский языки.</li>
+              <li id="2.2"><a class="rule-num" href="#2.2" aria-label="Ссылка на пункт 2.2">2.2</a> Запрещается публиковать эротические, порнографические, излишне жестокие материалы.</li>
+              <li id="2.3"><a class="rule-num" href="#2.3" aria-label="Ссылка на пункт 2.3">2.3</a> Запрещено введение в заблуждение с негативным умыслом.</li>
+              <li id="2.4"><a class="rule-num" href="#2.4" aria-label="Ссылка на пункт 2.4">2.4</a> Запрещена публикация / рассылка материалов с вредоносным ПО, если его существование было известно заранее.</li>
+              <li id="2.5"><a class="rule-num" href="#2.5" aria-label="Ссылка на пункт 2.5">2.5</a> Запрещено разглашение личной информации человека без его согласия.</li>
+              <li id="2.6"><a class="rule-num" href="#2.6" aria-label="Ссылка на пункт 2.6">2.6</a> Запрещена пропаганда экстремизма и публикация экстремистских материалов.</li>
+              <li id="2.7"><a class="rule-num" href="#2.7" aria-label="Ссылка на пункт 2.7">2.7</a> Запрещена пропаганда и демонстрация нацистской (фашистской) символики, в том числе полка «Азов», «Кракен», 3-й ОШБ, РДК, «Полка Кастуся Калиновского», ЛСР и подобных.</li>
             </ul>
           </div>
 
           <div class="rules-chapter">
             <h2 class="rules-chapter-title">3. Иерархия</h2>
             <ul class="rules-list">
-              <li><span class="rule-num">3.1</span> Прислушивайтесь к мнению вышестоящих по должности / званию людей.</li>
-              <li><span class="rule-num">3.2</span> Выполняйте указания инструкторского состава.</li>
+              <li id="3.1"><a class="rule-num" href="#3.1" aria-label="Ссылка на пункт 3.1">3.1</a> Прислушивайтесь к мнению вышестоящих по должности / званию людей.</li>
+              <li id="3.2"><a class="rule-num" href="#3.2" aria-label="Ссылка на пункт 3.2">3.2</a> Выполняйте указания инструкторского состава.</li>
             </ul>
           </div>
 
           <div class="rules-chapter">
             <h2 class="rules-chapter-title">4. Поведение на ивентах</h2>
             <ul class="rules-list">
-              <li><span class="rule-num">4.1</span> Техника курсантов во время обучения неприкосновенна. Атака курсанта будет пресечена.</li>
-              <li><span class="rule-num">4.2</span> Слушайтесь модератора.</li>
-              <li><span class="rule-num">4.3</span> Запрещено применение АСП по взлетающим / садящимся самолётам / вертолётам, а также вертолётам/самолётам на стоянке, если там есть пилот.</li>
-              <li><span class="rule-num">4.4</span> Запрещено применять АСП по вертолёту / самолёту прессы (там сидит наш фотограф).</li>
-              <li><span class="rule-num">4.5</span> До начала воздушного боя человек должен знать о том, что с ним хотят вступить в бой. Уведомить его можно голосом и через захват УРВВ.</li>
+              <li id="4.1"><a class="rule-num" href="#4.1" aria-label="Ссылка на пункт 4.1">4.1</a> Техника курсантов во время обучения неприкосновенна. Атака курсанта будет пресечена.</li>
+              <li id="4.2"><a class="rule-num" href="#4.2" aria-label="Ссылка на пункт 4.2">4.2</a> Слушайтесь модератора.</li>
+              <li id="4.3"><a class="rule-num" href="#4.3" aria-label="Ссылка на пункт 4.3">4.3</a> Запрещено применение АСП по взлетающим / садящимся самолётам / вертолётам, а также вертолётам/самолётам на стоянке, если там есть пилот.</li>
+              <li id="4.4"><a class="rule-num" href="#4.4" aria-label="Ссылка на пункт 4.4">4.4</a> Запрещено применять АСП по вертолёту / самолёту прессы (там сидит наш фотограф).</li>
+              <li id="4.5"><a class="rule-num" href="#4.5" aria-label="Ссылка на пункт 4.5">4.5</a> До начала воздушного боя человек должен знать о том, что с ним хотят вступить в бой. Уведомить его можно голосом и через захват УРВВ.</li>
             </ul>
           </div>
 
@@ -114,16 +117,14 @@
   <footer class="site-footer">
     <div class="container">
       <div class="footer-logo">
-        <img src="/assets/logo.png" alt="Логотип" class="logo-img">
+        <img src="/assets/logo.png" alt="" class="logo-img">
         <span class="logo-text">АКАДЕМИЯ ЯКОВЛЕВА</span>
       </div>
-      <p class="footer-copy">VRChat · © 2025</p>
+      <p class="footer-copy">VRChat · © <span class="js-year">2025</span></p>
     </div>
   </footer>
 
-  <script>
-    function toggleMenu() { document.getElementById('mobileNav').classList.toggle('open'); }
-    function closeMenu() { document.getElementById('mobileNav').classList.remove('open'); }
-  </script>
+  <script src="/js/site.js"></script>
+  <script src="/js/rules.js"></script>
 </body>
 </html>
