@@ -33,7 +33,7 @@ async function fetchSheet(sheetName) {
 }
 
 // ===== ФОРМАТИРОВАНИЕ ВРЕМЕНИ ИВЕНТОВ =====
-const EVENT_DURATION_MS = 60 * 60 * 1000;
+const EVENT_DURATION_MS = 2 * 60 * 60 * 1000; // Лётная среда идёт 2 часа
 const MSK_TZ = 'Europe/Moscow';
 const MSK_OFFSET_MS = 3 * 60 * 60 * 1000; // в России нет перехода на летнее время
 
