@@ -4,7 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Академия Яковлева — VRChat</title>
+  <link rel="alternate" hreflang="ru" href="https://yakovlev-academy.ru/main/">
+  <link rel="alternate" hreflang="en" href="https://yakovlev-academy.ru/en/main/">
   <link rel="icon" type="image/png" href="/assets/logo.png">
+  <link rel="apple-touch-icon" href="/assets/icons/app/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <meta name="theme-color" content="#0e0e10">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap">
   <link rel="stylesheet" href="/css/style.css">
@@ -33,6 +38,7 @@
         <a href="/members" class="nav-link">Для участников</a>
         <a href="/join" class="nav-link">Как вступить</a>
         <a href="/faq" class="nav-link">FAQ</a>
+        <a href="/en/main/" class="nav-link nav-lang" lang="en" hreflang="en" aria-label="English version">EN</a>
       </nav>
       <button class="burger" type="button" aria-label="Меню" aria-controls="mobileNav" aria-expanded="false">
         <span></span><span></span><span></span>
@@ -45,6 +51,7 @@
     <a href="/members">Для участников</a>
     <a href="/join">Как вступить</a>
     <a href="/faq">FAQ</a>
+    <a href="/en/main/" class="nav-lang" lang="en" hreflang="en" aria-label="English version">EN</a>
   </nav>
 
   <main>
@@ -75,6 +82,14 @@
               <span class="btn-big-sub">Поддержать проект</span>
             </div>
           </a>
+        </div>
+        <div class="next-event" id="nextEvent" hidden>
+          <div class="next-event-text">
+            <p class="next-event-title"></p>
+            <p class="next-event-timer"></p>
+            <p class="next-event-meta"></p>
+          </div>
+          <a class="next-event-btn" target="_blank" rel="noopener" hidden></a>
         </div>
       </div>
     </section>

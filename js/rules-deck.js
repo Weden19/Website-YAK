@@ -1,5 +1,5 @@
 // ===== ПРАВИЛА АВАТАРОВ – ДАННЫЕ СЛАЙДОВ =====
-const RULES_SLIDES = [
+const RULES_SLIDES_RU = [
   {
     eyebrow: 'Академия Яковлева',
     title: 'Внешний вид служебных аватаров',
@@ -203,6 +203,14 @@ const RULES_SLIDES = [
   },
 ];
 
+// Английские слайды подключаются отдельным файлом js/rules-deck-en.js (window.RULES_SLIDES_EN)
+const RULES_LANG = document.documentElement.lang === 'en' ? 'en' : 'ru';
+const RULES_SLIDES = (RULES_LANG === 'en' && window.RULES_SLIDES_EN) || RULES_SLIDES_RU;
+const RULES_UI = {
+  ru: { slide: n => `Слайд ${n}` },
+  en: { slide: n => `Slide ${n}` },
+}[RULES_LANG];
+
 // ===== РЕНДЕР БЛОКОВ =====
 function renderRulesBlock(block) {
   switch (block.type) {
@@ -251,7 +259,7 @@ function initRulesDeck() {
 
   if (dotsContainer) {
     dotsContainer.innerHTML = RULES_SLIDES.map((_, i) => `
-      <button class="rules-deck-dot${i === 0 ? ' active' : ''}" type="button" aria-label="Слайд ${i + 1}"${i === 0 ? ' aria-current="true"' : ''} onclick="goToRulesSlide(${i})"></button>
+      <button class="rules-deck-dot${i === 0 ? ' active' : ''}" type="button" aria-label="${RULES_UI.slide(i + 1)}"${i === 0 ? ' aria-current="true"' : ''} onclick="goToRulesSlide(${i})"></button>
     `).join('');
   }
 

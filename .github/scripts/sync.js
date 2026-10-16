@@ -28,6 +28,55 @@ class CookieJar {
     }
 }
 
+// ===== Подмена символов VRChat =====
+// VRChat заменяет часть знаков препинания похожими символами (против ссылок в названиях).
+// Возвращаем обычные, чтобы на сайте не было «Лётная среда‚ мои чувакиǃ».
+const VRCHAT_HOMOGLYPHS = {
+    '\u201A': ',', // ‚ single low-9 quotation mark
+    '\u01C3': '!', // ǃ latin letter retroflex click
+    '\u2024': '.', // ․ one dot leader
+    '\uA4F8': '.', // ꓸ lisu letter tone mya ti
+    '\u02F8': ':', // ˸ modifier letter raised colon
+    '\u0589': ':', // ։ armenian full stop
+    '\u037E': ';', // ; greek question mark
+    '\u2044': '/', // ⁄ fraction slash
+    '\u2215': '/', // ∕ division slash
+    '\uFF0F': '/', // ／ fullwidth solidus
+    '\u2236': ':', // ∶ ratio
+    '\uFF1F': '?', // ？ fullwidth question mark
+    '\uFF03': '#', // ＃ fullwidth number sign
+    '\uFF20': '@', // ＠ fullwidth commercial at
+};
+const HOMOGLYPH_RE = new RegExp(`[${Object.keys(VRCHAT_HOMOGLYPHS).join('')}]`, 'g');
+
+function normalizeVRChatText(text) {
+    return typeof text === 'string' ? text.replace(HOMOGLYPH_RE, ch => VRCHAT_HOMOGLYPHS[ch]) : text;
+}
+
+// ===== Открытые инстансы группы («Сейчас идёт») =====
+// GET /groups/{groupId}/instances — инстансы группы, видимые боту
+async function fetchGroupInstances(headers) {
+    const res = await axios.get(`${BASE_URL}/groups/${GROUP_ID}/instances`, { headers });
+    const list = Array.isArray(res.data) ? res.data : [];
+    return list
+        .map(i => {
+            const location = i.location || '';
+            const [locWorld, ...locRest] = location.split(':');
+            const worldId = i.world?.id || i.worldId || locWorld;
+            const instanceId = i.instanceId || locRest.join(':');
+            if (!worldId || !worldId.startsWith('wrld_') || !instanceId) return null;
+            const users = Number(i.memberCount ?? i.n_users ?? i.userCount ?? 0) || 0;
+            return {
+                worldId,
+                worldName: normalizeVRChatText(i.world?.name || ''),
+                users,
+                url: `https://vrchat.com/home/launch?worldId=${encodeURIComponent(worldId)}&instanceId=${encodeURIComponent(instanceId)}`,
+            };
+        })
+        .filter(Boolean)
+        .sort((a, b) => b.users - a.users);
+}
+
 // ===== Moscow week helpers =====
 function getMoscowWeekStart(date) {
     const moscowOffsetMs = 3 * 60 * 60 * 1000;
@@ -151,8 +200,8 @@ async function main() {
                         : new Date(starts.getTime() + DEFAULT_DURATION_MS);
                     return {
                         id: e.id,
-                        name: e.title || 'Ивент',
-                        description: e.description || '',
+                        name: normalizeVRChatText(e.title) || 'Ивент',
+                        description: normalizeVRChatText(e.description) || '',
                         date: starts.toLocaleDateString('ru-RU', { timeZone: 'Europe/Moscow' }),
                         time: starts.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Moscow' }),
                         starts,
@@ -179,6 +228,15 @@ async function main() {
             console.log(`Prepared ${events.length} event(s) for display`);
         } catch (e) {
             console.warn('Could not fetch events list:', e.response?.data || e.message);
+        }
+
+        // ===== LIVE =====
+        let live = [];
+        try {
+            live = await fetchGroupInstances(headers);
+            console.log(`Live group instances: ${live.length}`);
+        } catch (e) {
+            console.warn('Could not fetch group instances:', e.response?.status, e.response?.data || e.message);
         }
 
         let gallery = [];
@@ -209,6 +267,7 @@ async function main() {
             events,
             nextEvent: nextEvent || events[0] || null,
             gallery,
+            live,
             updated: new Date().toISOString(),
         };
 
