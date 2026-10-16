@@ -98,6 +98,20 @@ for (const file of files) {
     }
 }
 
+// Переключатель языка: «RU» должен вести на русскую страницу, «EN» — на английскую
+for (const file of files.filter(f => f.endsWith('.html'))) {
+    const html = fs.readFileSync(file, 'utf8');
+    for (const m of html.matchAll(/<a\b[^>]*class="[^"]*\bnav-lang\b[^"]*"[^>]*>/g)) {
+        const tag = m[0];
+        const href = (tag.match(/href="([^"]*)"/) || [])[1] || '';
+        const lang = (tag.match(/hreflang="([^"]*)"/) || [])[1];
+        const isEn = href.startsWith('/en/');
+        if ((lang === 'ru' && isEn) || (lang === 'en' && !isEn)) {
+            errors.push(`${rel(file)}: переключатель языка ${lang.toUpperCase()} ведёт на «${href}»`);
+        }
+    }
+}
+
 if (errors.length) {
     console.error(`Найдено проблем: ${errors.length}`);
     for (const e of [...new Set(errors)]) console.error('  ✗ ' + e);

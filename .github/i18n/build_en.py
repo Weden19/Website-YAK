@@ -48,14 +48,14 @@ def build():
         ru = set_header(ru, home, 'ru', page)
         open(path, 'w', encoding='utf-8').write(ru)
 
-        en = set_header(ru, home, 'en', page)
-        en = en.replace('<html lang="ru">', '<html lang="en">', 1)
+        en = ru.replace('<html lang="ru">', '<html lang="en">', 1)
         en = en.replace('content="ru_RU"', 'content="en_US"')
         en = re.sub(r'https://yakovlev-academy\.ru/(main|rules|members|join|faq)/', r'https://yakovlev-academy.ru/en/\1/', en)
         # ссылки внутри сайта → английские страницы (ассеты и данные не трогаем)
         en = re.sub(r'href="/(main|rules|members|join|faq)(/?(?:#[^"]*)?)"', r'href="/en/\1\2"', en)
-        # alternates после замены url: вернуть ru-ссылку
-        en = en.replace('hreflang="ru" href="https://yakovlev-academy.ru/en/', 'hreflang="ru" href="https://yakovlev-academy.ru/')
+        # Шапку (с кнопкой «RU», ведущей на русскую страницу) и hreflang ставим ПОСЛЕ замены ссылок,
+        # иначе замена выше перепишет и кнопку «RU» на /en/...
+        en = set_header(en, home, 'en', page)
         en = translate_html(en)
         if page == 'members':
             en = en.replace('<script src="/js/rules-deck.js"></script>',
