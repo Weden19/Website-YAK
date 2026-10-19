@@ -34,4 +34,36 @@
     document.querySelectorAll('.js-year').forEach(el => {
         el.textContent = year > START_YEAR ? `${START_YEAR}–${year}` : String(START_YEAR);
     });
+
+    // Уведомление о cookies: показываем, пока посетитель не нажмёт «Понятно»
+    const COOKIE_KEY = 'cookieNoticeAccepted';
+    const COOKIE_TEXT = document.documentElement.lang === 'en'
+        ? { label: 'Cookie notice', text: 'This site uses cookies (Google Tag Manager) to collect anonymous visit statistics. By continuing to use the site, you agree to this.', ok: 'Got it' }
+        : { label: 'Уведомление о cookies', text: 'Сайт использует cookies (Google Tag Manager) для сбора обезличенной статистики посещений. Продолжая пользоваться сайтом, вы соглашаетесь с этим.', ok: 'Понятно' };
+
+    let accepted = false;
+    try { accepted = localStorage.getItem(COOKIE_KEY) === '1'; } catch (e) {}
+
+    if (!accepted) {
+        const notice = document.createElement('div');
+        notice.className = 'cookie-notice';
+        notice.setAttribute('role', 'region');
+        notice.setAttribute('aria-label', COOKIE_TEXT.label);
+
+        const text = document.createElement('p');
+        text.className = 'cookie-notice-text';
+        text.textContent = COOKIE_TEXT.text;
+
+        const ok = document.createElement('button');
+        ok.type = 'button';
+        ok.className = 'cookie-notice-btn';
+        ok.textContent = COOKIE_TEXT.ok;
+        ok.addEventListener('click', () => {
+            try { localStorage.setItem(COOKIE_KEY, '1'); } catch (e) {}
+            notice.remove();
+        });
+
+        notice.append(text, ok);
+        document.body.appendChild(notice);
+    }
 })();
