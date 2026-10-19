@@ -90,6 +90,13 @@
     "https://api.vrchat.cloud/api/1/file/file_57019e48-b912-45eb-9c53-b10349089d1e/1/file",
     "https://api.vrchat.cloud/api/1/file/file_1f85f6a0-e04d-4fa7-a6ff-2f34c73ad62a/1/file"
   ],
-  "live": [],
-  "updated": "2026-10-17T22:04:43.786Z"
+  "live": [
+    {
+      "worldId": "wrld_f6eb25f4-40e7-462d-ac44-43ad60e1b7f1",
+      "worldName": "Krasnoe Air Base · L-39 Albatros",
+      "users": 1,
+      "url": "https://vrchat.com/home/launch?worldId=wrld_f6eb25f4-40e7-462d-ac44-43ad60e1b7f1&instanceId=10770~group(grp_629eb128-47c7-40c5-848b-c0b8cb8e8a7a)~groupAccessType(public)~region(eu)"
+    }
+  ],
+  "updated": "2026-10-19T20:27:57.603Z"
 }
