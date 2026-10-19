@@ -592,7 +592,7 @@ button:focus-visible,
 .btn-big-sub { font-size: 12px; opacity: 0.75; font-weight: 400; }
 
 /* ─── RULES PAGE ─── */
-.rules-content { max-width: 720px; }
+.rules-content { max-width: 720px; margin: 0 auto; }
 
 .rules-chapter { margin-bottom: 48px; }
 
