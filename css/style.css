@@ -1472,6 +1472,7 @@ button:focus-visible,
   display: grid;
   gap: 14px;
   max-width: 760px;
+  margin: 0 auto;
 }
 .join-step {
   counter-increment: step;
@@ -1559,7 +1560,7 @@ button:focus-visible,
 }
 
 /* ─── FAQ ─── */
-.faq { max-width: 760px; }
+.faq { max-width: 760px; margin: 0 auto; }
 .faq-group {
   font-size: 13px;
   font-weight: 600;
