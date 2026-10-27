@@ -270,6 +270,22 @@ EN = {
     # 404
     'Страница не найдена — Академия Яковлева': 'Page not found — Yakovlev Academy',
     'Страница не найдена.': 'Page not found.',
+    # ===== дизайн: кнопки, ТТХ, поиск FAQ =====
+    '5 шагов до первого вылета': '5 steps to your first flight',
+    'Роль': 'Role',
+    'Экипаж': 'Crew',
+    'Макс. скорость': 'Top speed',
+    'Вооружение': 'Armament',
+    'Учебно-боевой': 'Combat trainer',
+    '1 050 км/ч': '1,050 km/h',
+    '9 точек подвески, до 3 т: пушка, НАР, Р-73, бомбы': '9 hardpoints, up to 3 t: gun, rockets, R-73, bombs',
+    'Штурмовой транспортный': 'Assault transport',
+    '3 + до 36 десантников': '3 + up to 36 troops',
+    '250 км/ч': '250 km/h',
+    'ПТУР «Атака», НАР С-8, пулемёты': '“Ataka” ATGMs, S-8 rockets, machine guns',
+    'Поиск по вопросам': 'Search questions',
+    'Поиск: десктоп, форма, экзамен…': 'Search: desktop, uniform, exam…',
+    'Ничего не нашлось — спросите в Discord.': 'Nothing found — ask on Discord.',
 }
 
 # ===== слайды правил аватаров =====

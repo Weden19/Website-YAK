@@ -2,6 +2,7 @@
 // Сгенерировано из RULES_SLIDES_RU (js/rules-deck.js). При правке русских слайдов обновите и этот файл.
 window.RULES_SLIDES_EN = [
   {
+    "cover": true,
     "eyebrow": "Yakovlev Academy",
     "title": "Service avatar appearance",
     "blocks": [

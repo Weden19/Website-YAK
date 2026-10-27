@@ -1,6 +1,7 @@
 // ===== ПРАВИЛА АВАТАРОВ – ДАННЫЕ СЛАЙДОВ =====
 const RULES_SLIDES_RU = [
   {
+    cover: true,
     eyebrow: 'Академия Яковлева',
     title: 'Внешний вид служебных аватаров',
     blocks: [
@@ -207,8 +208,8 @@ const RULES_SLIDES_RU = [
 const RULES_LANG = document.documentElement.lang === 'en' ? 'en' : 'ru';
 const RULES_SLIDES = (RULES_LANG === 'en' && window.RULES_SLIDES_EN) || RULES_SLIDES_RU;
 const RULES_UI = {
-  ru: { slide: n => `Слайд ${n}` },
-  en: { slide: n => `Slide ${n}` },
+  ru: { slide: n => `Слайд ${n}`, start: 'Начать', cover: 'Обложка', slides: 'Слайды' },
+  en: { slide: n => `Slide ${n}`, start: 'Start', cover: 'Cover', slides: 'Slides' },
 }[RULES_LANG];
 
 // ===== РЕНДЕР БЛОКОВ =====
@@ -237,13 +238,28 @@ function renderRulesBlock(block) {
 }
 
 function renderRulesSlide(slide, index) {
+  const cover = slide.cover
+    ? `<button class="rules-cover-btn" type="button" onclick="goToRulesSlide(1)">${RULES_UI.start} →</button>`
+    : '';
   return `
-    <div class="rules-slide${index === 0 ? ' active' : ''}" data-index="${index}">
-      <p class="rules-slide-eyebrow">${slide.eyebrow}</p>
-      <h3 class="rules-slide-title">${slide.title}</h3>
-      ${slide.blocks.map(renderRulesBlock).join('')}
+    <div class="rules-slide${slide.cover ? ' rules-slide--cover' : ''}${index === 0 ? ' active' : ''}" data-index="${index}">
+      <div class="rules-slide-inner">
+        <p class="rules-slide-eyebrow">${slide.eyebrow}</p>
+        <h3 class="rules-slide-title">${slide.title}</h3>
+        ${slide.blocks.map(renderRulesBlock).join('')}
+        ${cover}
+      </div>
     </div>
   `;
+}
+
+// Лента слайдов под колодой: номер + заголовок вместо безликих точек
+function renderRulesStrip() {
+  return RULES_SLIDES.map((slide, i) => {
+    const num = slide.cover ? '00' : (/^\d+$/.test(slide.eyebrow) ? slide.eyebrow : '✓');
+    const title = slide.cover ? RULES_UI.cover : slide.title;
+    return `<button class="rules-strip-item${i === 0 ? ' active' : ''}" type="button" aria-label="${RULES_UI.slide(i + 1)}: ${title}"${i === 0 ? ' aria-current="true"' : ''} onclick="goToRulesSlide(${i})"><span class="rules-strip-num">${num}</span><span class="rules-strip-title">${title}</span></button>`;
+  }).join('');
 }
 
 // ===== СОСТОЯНИЕ И НАВИГАЦИЯ =====
@@ -257,11 +273,14 @@ function initRulesDeck() {
 
   viewport.innerHTML = RULES_SLIDES.map(renderRulesSlide).join('');
 
-  if (dotsContainer) {
-    dotsContainer.innerHTML = RULES_SLIDES.map((_, i) => `
-      <button class="rules-deck-dot${i === 0 ? ' active' : ''}" type="button" aria-label="${RULES_UI.slide(i + 1)}"${i === 0 ? ' aria-current="true"' : ''} onclick="goToRulesSlide(${i})"></button>
-    `).join('');
-  }
+  // Точки заменены лентой слайдов
+  if (dotsContainer) dotsContainer.remove();
+  const strip = document.createElement('nav');
+  strip.className = 'rules-deck-strip';
+  strip.id = 'rulesDeckStrip';
+  strip.setAttribute('aria-label', RULES_UI.slides);
+  strip.innerHTML = renderRulesStrip();
+  viewport.after(strip);
 
   if (counter) {
     counter.textContent = `1 / ${rulesDeckState.total}`;
@@ -301,7 +320,7 @@ function initRulesDeckGestures(viewport) {
 
 function goToRulesSlide(index) {
   const slides = document.querySelectorAll('.rules-slide');
-  const dots = document.querySelectorAll('.rules-deck-dot');
+  const dots = document.querySelectorAll('.rules-strip-item');
   const counter = document.getElementById('rulesDeckCounter');
   const total = rulesDeckState.total;
   if (total === 0) return;
@@ -316,6 +335,14 @@ function goToRulesSlide(index) {
   dots[next]?.setAttribute('aria-current', 'true');
   if (counter) counter.textContent = `${next + 1} / ${total}`;
   updateRulesNavButtons();
+
+  // Прокрутить ленту так, чтобы активный слайд был виден (без прокрутки страницы)
+  const strip = document.getElementById('rulesDeckStrip');
+  const chip = dots[next];
+  if (strip && chip) {
+    const target = chip.offsetLeft - (strip.clientWidth - chip.offsetWidth) / 2;
+    strip.scrollTo({ left: Math.max(0, target), behavior: 'smooth' });
+  }
 }
 
 function updateRulesNavButtons() {
