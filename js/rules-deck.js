@@ -281,6 +281,17 @@ function initRulesDeck() {
   strip.setAttribute('aria-label', RULES_UI.slides);
   strip.innerHTML = renderRulesStrip();
   viewport.after(strip);
+  // Колесо мыши над лентой листает её вбок, а не страницу
+  strip.addEventListener('wheel', e => {
+    if (Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return;
+    const max = strip.scrollWidth - strip.clientWidth;
+    if (max <= 0) return;
+    const atStart = strip.scrollLeft <= 0 && e.deltaY < 0;
+    const atEnd = strip.scrollLeft >= max - 1 && e.deltaY > 0;
+    if (atStart || atEnd) return; // дальше крутить некуда — отдаём прокрутку странице
+    e.preventDefault();
+    strip.scrollLeft += e.deltaY;
+  }, { passive: false });
 
   if (counter) {
     counter.textContent = `1 / ${rulesDeckState.total}`;
