@@ -28,6 +28,23 @@
         if (href && href !== '/main' && normalize(href) === current) a.setAttribute('aria-current', 'page');
     });
 
+    // Мягкое появление секций при прокрутке (не для «уменьшить движение» и старых браузеров)
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (!reduceMotion && 'IntersectionObserver' in window) {
+        const targets = document.querySelectorAll('main > section:not(.hero) > .container, main > section:not(.hero) > .slider');
+        if (targets.length) {
+            document.documentElement.classList.add('reveal-on');
+            const observer = new IntersectionObserver(entries => {
+                entries.forEach(entry => {
+                    if (!entry.isIntersecting) return;
+                    entry.target.classList.add('is-visible');
+                    observer.unobserve(entry.target);
+                });
+            }, { rootMargin: '0px 0px -8% 0px', threshold: 0.05 });
+            targets.forEach(el => { el.classList.add('reveal'); observer.observe(el); });
+        }
+    }
+
     // Год в подвале
     const START_YEAR = 2025;
     const year = new Date().getFullYear();

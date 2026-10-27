@@ -23,7 +23,7 @@
   <link rel="manifest" href="/manifest.webmanifest">
   <meta name="theme-color" content="#0e0e10">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Russo+One&display=swap">
   <link rel="stylesheet" href="/css/style.css">
   <!-- Google Tag Manager -->
   <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
@@ -81,6 +81,11 @@
 
     <section class="section">
       <div class="container">
+        <div class="faq-search">
+          <label class="sr-only" for="faqSearch">Поиск по вопросам</label>
+          <input id="faqSearch" class="faq-search-input" type="search" placeholder="Поиск: десктоп, форма, экзамен…" autocomplete="off">
+        </div>
+        <p class="faq-empty" id="faqEmpty" hidden>Ничего не нашлось — спросите в Discord.</p>
         <div class="faq">
           <h2 class="faq-group">Новичкам</h2>
           <details class="faq-item" id="desktop">
@@ -167,6 +172,7 @@
   </footer>
 
   <script src="/js/site.js"></script>
+  <script src="/js/faq.js"></script>
   <script>
     // Переход по ссылке /faq/#exam сразу раскрывает нужный вопрос
     function openFromHash() {

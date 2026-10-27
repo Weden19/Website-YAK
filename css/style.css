@@ -19,6 +19,8 @@
   --upcoming: #2a9d6c;
   --upcoming-dim: rgba(42,157,108,0.15);
   --font: 'Inter', system-ui, sans-serif;
+  /* Заголовки: Russo One (кириллица, авиа-военный характер). Поменять шрифт — здесь и в ссылке на Google Fonts */
+  --font-display: 'Russo One', 'Inter', system-ui, sans-serif;
   --radius: 8px;
   --radius-lg: 14px;
 }
@@ -547,49 +549,83 @@ button:focus-visible,
 }
 
 /* ─── BIG BUTTONS ─── */
-.big-buttons {
-  display: flex;
-  gap: 16px;
-  flex-wrap: wrap;
+/* Блок кнопок и баннер отсчёта — одной ширины */
+.hero-actions {
+  width: 100%;
+  max-width: 960px;
   margin-top: 48px;
 }
 
-.btn-big {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 18px 28px;
-  border-radius: var(--radius-lg);
-  text-decoration: none;
-  font-size: 16px;
-  font-weight: 600;
-  transition: 0.15s;
-  flex: 1;
-  min-width: 220px;
+.big-buttons {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
 }
 
-.btn-big-discord { background: #5865f2; color: #fff; }
-.btn-big-discord:hover { background: #4752c4; }
+/* Единый стиль: тёмное стекло, цвет бренда — только у иконки */
+.btn-big {
+  --brand: var(--accent);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: var(--radius-lg);
+  text-decoration: none;
+  color: var(--text-primary);
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: border-color 0.15s, transform 0.15s, background 0.15s;
+  min-width: 0;
+}
 
-.btn-big-vrchat { background: #00b4d8; color: #fff; }
-.btn-big-vrchat:hover { background: #0096c7; }
+.btn-big:hover {
+  border-color: var(--brand);
+  background: rgba(0, 0, 0, 0.6);
+  transform: translateY(-2px);
+}
 
-.btn-big-da { background: #F15F2C; color: #fff; }
-.btn-big-da:hover { background: #d4521f; }
+.btn-big > svg,
+.btn-big > img {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  padding: 8px;
+  border-radius: 10px;
+  background: var(--brand);
+  box-sizing: border-box;
+}
 
-.btn-big-boosty { background: #F15F2C; color: #fff; }
-.btn-big-boosty:hover { background: #d4521f; }
+.btn-big-discord { --brand: #5865f2; }
+.btn-big-vrchat { --brand: #00b4d8; }
+.btn-big-boosty { --brand: #f45f1a; }
 
-.btn-big svg { flex-shrink: 0; }
+/* Главная кнопка для новичка — залитая */
+.btn-big-primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #0e0e10;
+}
+.btn-big-primary:hover { background: #5ccbfa; border-color: #5ccbfa; }
+.btn-big-primary > svg { background: rgba(14, 14, 16, 0.12); color: #0e0e10; }
 
 .btn-big-label {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 3px;
+  min-width: 0;
 }
 
-.btn-big-title { font-size: 16px; font-weight: 600; line-height: 1; }
-.btn-big-sub { font-size: 12px; opacity: 0.75; font-weight: 400; }
+.btn-big-title { font-size: 16px; font-weight: 600; line-height: 1.1; }
+.btn-big-sub { font-size: 12px; opacity: 0.75; font-weight: 400; line-height: 1.3; }
+
+@media (max-width: 960px) {
+  .big-buttons { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 520px) {
+  .big-buttons { grid-template-columns: 1fr; }
+}
 
 /* ─── RULES PAGE ─── */
 .rules-content { max-width: 720px; margin: 0 auto; }
@@ -803,14 +839,86 @@ button:focus-visible,
   overflow: hidden;
 }
 
-.rules-deck-viewport { position: relative; min-height: 480px; }
+/* Все слайды лежат в одной ячейке сетки: высота колоды = самый высокий слайд,
+   при перелистывании ничего не прыгает и нет искусственной пустоты */
+.rules-deck-viewport { position: relative; display: grid; }
 
-.rules-slide { display: none; padding: 40px 44px 32px; }
+.rules-slide {
+  grid-area: 1 / 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 36px 44px 32px;
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
 
 .rules-slide.active {
-  display: block;
+  visibility: visible;
+  opacity: 1;
+  pointer-events: auto;
   animation: rulesFadeIn 0.35s ease;
 }
+
+/* Обложка */
+.rules-slide--cover {
+  justify-content: flex-end;
+  min-height: 360px;
+  background:
+    linear-gradient(to top, rgba(14, 14, 16, 0.96) 20%, rgba(14, 14, 16, 0.55) 60%, rgba(14, 14, 16, 0.25)),
+    url('../assets/hero-bg.jpg') center / cover;
+}
+.rules-slide--cover .rules-slide-title { font-size: clamp(28px, 4.2vw, 44px); max-width: 640px; }
+.rules-slide--cover .rules-slide-text { max-width: 520px; }
+.rules-cover-btn {
+  align-self: flex-start;
+  margin-top: 20px;
+  padding: 11px 20px;
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--accent);
+  color: #0e0e10;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.rules-cover-btn:hover { background: #5ccbfa; }
+
+/* Лента слайдов */
+.rules-deck-strip {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding: 10px 16px;
+  border-top: 1px solid var(--border);
+  scrollbar-width: thin;
+}
+.rules-strip-item {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 220px;
+  padding: 7px 12px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+.rules-strip-item:hover { border-color: var(--border-strong); color: var(--text-primary); }
+.rules-strip-item.active { border-color: var(--accent-border); background: var(--accent-dim); color: var(--text-primary); }
+.rules-strip-num {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--accent);
+}
+.rules-strip-title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 @keyframes rulesFadeIn {
   from { opacity: 0; transform: translateY(6px); }
@@ -892,7 +1000,7 @@ button:focus-visible,
   margin: 20px auto 0;
 }
 
-.rules-slide-img--wide { max-width: 720px; }
+.rules-slide-img--wide { max-width: 600px; }
 
 .rules-slide-img-row {
   display: flex;
@@ -979,76 +1087,47 @@ button:focus-visible,
   color: var(--text-muted);
 }
 
-.rules-deck-dots {
-  display: flex;
-  gap: 5px;
-  flex-wrap: wrap;
-  max-width: 200px;
-  justify-content: center;
-}
-
-.rules-deck-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--border-strong);
-  border: none;
-  cursor: pointer;
-  padding: 0;
-  transition: background 0.15s;
-}
-
-.rules-deck-dot.active { background: var(--accent); }
 
 @media (max-width: 640px) {
   .rules-slide { padding: 28px 20px 24px; }
-  .rules-deck-viewport { min-height: 560px; }
-  .rules-deck-dots { display: none; }
+  .rules-slide--cover { min-height: 300px; }
 }
 
 /* ─── FLEET ─── */
 .fleet-list {
   display: flex;
   flex-direction: column;
-  gap: 64px;
+  gap: 24px;
 }
 
 .fleet-item {
   display: grid;
-  grid-template-columns: 1fr 280px;
-  gap: 48px;
+  grid-template-columns: minmax(0, 420px) 1fr;
+  gap: 40px;
   align-items: center;
+  padding: 28px;
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
 }
 
-.fleet-item-reverse {
-  grid-template-columns: 1fr 280px;
-}
-
-.fleet-item-reverse .fleet-info { order: 1; }
+/* Чередование: у второй машины картинка справа */
+.fleet-item-reverse { grid-template-columns: 1fr minmax(0, 420px); }
 .fleet-item-reverse .fleet-viewer { order: 2; }
 
 .fleet-viewer {
-  width: 280px;
-  height: 280px;
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-  background: transparent;
-  border: none;
-  flex-shrink: 0;
-}
-
-.fleet-viewer-placeholder {
+  aspect-ratio: 4 / 3;
+  border-radius: var(--radius);
+  background: radial-gradient(ellipse at center, rgba(56, 189, 248, 0.12), transparent 70%);
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.fleet-placeholder-img {
+.fleet-viewer img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
-  opacity: 0.5;
-  filter: grayscale(1);
+  object-fit: contain;
 }
 
 .fleet-status {
@@ -1061,53 +1140,58 @@ button:focus-visible,
   margin-bottom: 12px;
 }
 
-.fleet-status-active { background: rgba(42,157,108,0.15); color: #2a9d6c; }
+.fleet-status-active { background: rgba(42,157,108,0.15); color: #4ade80; }
 .fleet-status-incoming { background: var(--accent-dim); color: var(--accent); }
 .fleet-status-planned { background: rgba(255,255,255,0.05); color: var(--text-muted); }
 
 .fleet-name {
-  font-size: 24px;
-  font-weight: 600;
-  letter-spacing: -0.01em;
+  font-size: 28px;
   margin-bottom: 12px;
 }
 
 .fleet-desc {
   font-size: 15px;
   color: var(--text-secondary);
-  line-height: 1.75;
+  line-height: 1.7;
+}
+
+/* ТТХ — плитки «подпись / значение» */
+.fleet-specs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 20px;
+}
+.fleet-spec {
+  background: var(--bg-alt);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 12px;
+}
+.fleet-spec dt {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 2px;
+}
+.fleet-spec dd {
+  font-size: 14px;
+  color: var(--text-primary);
+  line-height: 1.4;
 }
 
 @media (max-width: 768px) {
   .fleet-item,
   .fleet-item-reverse {
     grid-template-columns: 1fr;
+    gap: 16px;
+    padding: 18px;
   }
-
-  .fleet-item .fleet-info,
-  .fleet-item-reverse .fleet-info {
-    order: 1;
-  }
-
-  .fleet-item .fleet-viewer,
-  .fleet-item-reverse .fleet-viewer {
-    order: 2;
-  }
-
-  .fleet-viewer {
-    width: 100%;
-    height: 240px;
-  }
-}
-
-/* ─── BOOSTY ─── */
-.btn-big-boosty {
-  background: #f45f1a;
-  color: #fff;
-}
-
-.btn-big-boosty:hover {
-  background: #d96010;
+  .fleet-item-reverse .fleet-viewer { order: 0; }
+  .fleet-viewer { aspect-ratio: 16 / 9; }
+  .fleet-name { font-size: 24px; }
 }
 
 .site-header .container {
@@ -1740,3 +1824,129 @@ button:focus-visible,
 @media (max-width: 640px) {
   .cookie-notice { flex-direction: column; align-items: stretch; gap: 12px; }
 }
+
+/* ─── ШРИФТ ЗАГОЛОВКОВ ─── */
+.hero-title,
+.section-title,
+.fleet-name,
+.rules-chapter-title,
+.rules-slide-title,
+.notfound-title,
+.notfound-code {
+  font-family: var(--font-display);
+  font-weight: 400;
+  letter-spacing: 0.01em;
+}
+
+/* ─── АВИАЦИОННЫЕ ДЕТАЛИ ─── */
+/* Едва заметная сетка-«координаты» на фоне страницы */
+body {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.018) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.018) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+/* Номер секции над заголовком: «01 ——» */
+main { counter-reset: section; }
+.section-title { counter-increment: section; }
+.section-title::before {
+  content: counter(section, decimal-leading-zero);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  color: var(--accent);
+  /* линия после номера */
+  background: linear-gradient(var(--accent-border), var(--accent-border)) no-repeat 34px 50% / 40px 1px;
+}
+
+/* Разделитель секций — пунктир, как разметка ВПП */
+.section { border-bottom: none; position: relative; }
+.section::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+  width: min(1032px, calc(100% - 48px));
+  height: 2px;
+  background: repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.1) 0 24px, transparent 24px 44px);
+}
+.section:last-of-type::after { display: none; }
+
+/* HUD-уголки у карточек (без псевдоэлементов — они у карточек уже заняты) */
+.stat-card,
+.fleet-item,
+.join-step,
+.next-event,
+.event-card:not(.event-upcoming) {
+  --hud: rgba(56, 189, 248, 0.6);
+  background-image:
+    linear-gradient(var(--hud), var(--hud)), linear-gradient(var(--hud), var(--hud)),
+    linear-gradient(var(--hud), var(--hud)), linear-gradient(var(--hud), var(--hud));
+  background-repeat: no-repeat;
+  background-size: 14px 2px, 2px 14px, 14px 2px, 2px 14px;
+  /* уголки внутри карточки, чтобы не вылезали за скругление */
+  background-position: 8px 8px, 8px 8px, calc(100% - 8px) calc(100% - 8px), calc(100% - 8px) calc(100% - 8px);
+}
+.next-event--live { --hud: rgba(74, 222, 128, 0.7); }
+
+.event-card.event-upcoming {
+  --hud: rgba(56, 189, 248, 0.6);
+  background-image:
+    linear-gradient(var(--hud), var(--hud)), linear-gradient(var(--hud), var(--hud)),
+    linear-gradient(var(--hud), var(--hud)), linear-gradient(var(--hud), var(--hud)),
+    linear-gradient(135deg, var(--surface), rgba(56, 189, 248, 0.05));
+  background-repeat: no-repeat;
+  background-size: 14px 2px, 2px 14px, 14px 2px, 2px 14px, 100% 100%;
+  background-position: 8px 8px, 8px 8px, calc(100% - 8px) calc(100% - 8px), calc(100% - 8px) calc(100% - 8px), 0 0;
+}
+
+/* ─── ПОЯВЛЕНИЕ БЛОКОВ ПРИ ПРОКРУТКЕ ─── */
+/* Класс .reveal-on ставит site.js, только если анимация разрешена — без JS всё видно сразу */
+.reveal-on .reveal {
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.reveal-on .reveal.is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+/* ─── FAQ: ПОИСК ─── */
+.faq-search {
+  max-width: 760px;
+  margin: 0 auto 28px;
+}
+.faq-search-input {
+  width: 100%;
+  min-height: 48px;
+  padding: 12px 16px 12px 44px;
+  font: inherit;
+  font-size: 16px;
+  color: var(--text-primary);
+  background: var(--surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%238a8a96' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='m20 20-3.5-3.5'/%3E%3C/svg%3E") no-repeat 16px 50%;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-lg);
+}
+.faq-search-input:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
+.faq-search-input::placeholder { color: var(--text-secondary); }
+.faq-empty {
+  max-width: 760px;
+  margin: 0 auto;
+  color: var(--text-secondary);
+  text-align: center;
+}
+.faq mark {
+  background: rgba(56, 189, 248, 0.25);
+  color: var(--text-primary);
+  border-radius: 3px;
+  padding: 0 1px;
+}
+.faq-group[hidden], .faq-item[hidden] { display: none; }
