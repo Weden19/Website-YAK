@@ -84,6 +84,13 @@
     "https://api.vrchat.cloud/api/1/file/file_57019e48-b912-45eb-9c53-b10349089d1e/1/file",
     "https://api.vrchat.cloud/api/1/file/file_1f85f6a0-e04d-4fa7-a6ff-2f34c73ad62a/1/file"
   ],
-  "live": [],
-  "updated": "2026-10-27T01:55:04.050Z"
+  "live": [
+    {
+      "worldId": "wrld_f1485bd6-9563-4941-89bd-f38d5e18d9aa",
+      "worldName": "Project 1143.5 ｜ Yakovlev Academy",
+      "users": 6,
+      "url": "https://vrchat.com/home/launch?worldId=wrld_f1485bd6-9563-4941-89bd-f38d5e18d9aa&instanceId=75541~group(grp_629eb128-47c7-40c5-848b-c0b8cb8e8a7a)~groupAccessType(plus)~region(eu)"
+    }
+  ],
+  "updated": "2026-10-28T18:10:47.582Z"
 }
