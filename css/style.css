@@ -1790,51 +1790,53 @@ button:focus-visible,
 
 /* Уведомление о cookies (создаётся в js/site.js). Ниже лайтбокса, чтобы не перекрывать просмотр фото */
 .cookie-notice {
+  /* Тонкая полоса во всю ширину у нижнего края */
   position: fixed;
-  left: 50%;
-  bottom: 16px;
-  transform: translateX(-50%);
+  left: 0;
+  right: 0;
+  bottom: 0;
   z-index: 900;
-  width: min(720px, calc(100% - 32px));
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 14px 18px;
-  background: var(--surface);
-  border: 1px solid var(--border-strong);
-  border-radius: var(--radius-lg);
-  box-shadow: 0 12px 28px rgba(0,0,0,.5);
+  justify-content: center;
+  gap: 14px;
+  padding: 8px 16px;
+  padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+  background: rgba(19, 19, 21, 0.92);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-top: 1px solid var(--border-strong);
   animation: cookie-in .25s ease;
 }
 .cookie-notice-text {
-  flex: 1;
-  font-size: 14px;
-  line-height: 1.5;
+  font-size: 13px;
+  line-height: 1.4;
   color: var(--text-secondary);
 }
 .cookie-notice-btn {
   flex-shrink: 0;
-  padding: 9px 18px;
+  padding: 5px 14px;
   border: none;
-  border-radius: var(--radius);
+  border-radius: 6px;
   background: var(--accent);
   color: #0e0e10;
   font: inherit;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   cursor: pointer;
 }
 .cookie-notice-btn:hover { opacity: 0.9; }
 .cookie-notice-btn:focus-visible { outline: 2px solid var(--text-primary); outline-offset: 2px; }
 @keyframes cookie-in {
-  from { opacity: 0; transform: translate(-50%, 12px); }
-  to { opacity: 1; transform: translate(-50%, 0); }
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
 }
 @media (prefers-reduced-motion: reduce) {
   .cookie-notice { animation: none; }
 }
 @media (max-width: 640px) {
-  .cookie-notice { flex-direction: column; align-items: stretch; gap: 12px; }
+  .cookie-notice { justify-content: space-between; gap: 10px; padding-left: 12px; padding-right: 12px; }
+  .cookie-notice-text { font-size: 12px; }
 }
 
 /* ─── ШРИФТ ЗАГОЛОВКОВ ─── */

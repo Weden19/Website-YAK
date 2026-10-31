@@ -55,8 +55,8 @@
     // Уведомление о cookies: показываем, пока посетитель не нажмёт «Понятно»
     const COOKIE_KEY = 'cookieNoticeAccepted';
     const COOKIE_TEXT = document.documentElement.lang === 'en'
-        ? { label: 'Cookie notice', text: 'This site uses cookies (Google Tag Manager) to collect anonymous visit statistics. By continuing to use the site, you agree to this.', ok: 'Got it' }
-        : { label: 'Уведомление о cookies', text: 'Сайт использует cookies (Google Tag Manager) для сбора обезличенной статистики посещений. Продолжая пользоваться сайтом, вы соглашаетесь с этим.', ok: 'Понятно' };
+        ? { label: 'Cookie notice', text: 'We use cookies (Google Tag Manager) for anonymous visit statistics. By continuing, you agree.', ok: 'Got it' }
+        : { label: 'Уведомление о cookies', text: 'Используем cookies (Google Tag Manager) для обезличенной статистики. Продолжая, вы соглашаетесь.', ok: 'Понятно' };
 
     let accepted = false;
     try { accepted = localStorage.getItem(COOKIE_KEY) === '1'; } catch (e) {}
